@@ -1,0 +1,25 @@
+# 환경 변수 파일 (API 키 등 민감한 정보)
+.env
+.env.local
+.env.*.local
+*.env
+
+# 원본 텍스트 파일도 제외
+.env.txt
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Claude Code 설정 (로컬 전용)
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
