@@ -334,6 +334,11 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
           <div class="card"><div class="card-label">재직 직원 수</div><div class="card-val" id="kpi-s">0명</div><div class="card-chg" id="kpi-s2">재직 중</div></div>
         </div>
       </div>
+      <div class="g3">
+        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">법인 / 개인 비율</div><div style="height:160px;position:relative"><canvas id="ch-type"></canvas></div></div>
+        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">업종별 분포</div><canvas id="ch-sector" height="120"></canvas></div>
+        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">CMS 납부 현황</div><div style="height:160px;position:relative"><canvas id="ch-cms"></canvas></div></div>
+      </div>
       <div class="g2">
         <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">월별 기장료 추이</div><canvas id="ch-revenue" height="160"></canvas></div>
         <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">거래처 수 추이</div><canvas id="ch-clients" height="160"></canvas></div>
@@ -352,11 +357,6 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 
     <!-- ── CLIENTS ── -->
     <div class="page" id="page-clients">
-      <div class="g3">
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">법인 / 개인 비율</div><div style="height:160px;position:relative"><canvas id="ch-type"></canvas></div></div>
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">업종별 분포</div><canvas id="ch-sector" height="120"></canvas></div>
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">CMS 납부 현황</div><div style="height:160px;position:relative"><canvas id="ch-cms"></canvas></div></div>
-      </div>
       <!-- 숨김 필터 (팝업·검색용) -->
       <input type="search" id="f-kw" style="display:none"/>
       <input type="search" id="f-bizno" style="display:none"/>
@@ -624,6 +624,18 @@ async function init(){
     // 관리자 계정 누락 시 보완 (비밀번호는 저장된 값 유지)
     if(!DB.users) DB.users=[{id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'}];
     else if(!(DB.users||[]).find(u=>u.id==='u1')) DB.users.unshift({id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'});
+    // 더미 직원 → 실제 직원으로 마이그레이션 (ID 유지하여 담당 거래처 연결 보존)
+    const _dummy=['김세무','이기장','박회계'];
+    if(DB.staff&&DB.staff.some(s=>_dummy.includes(s.name))){
+      const _real=[
+        {id:'s1',name:'강수민',rank:'세무사',leave:0,status:'재직',color:'#4f7eff'},
+        {id:'s2',name:'이지우',rank:'주임',leave:0,status:'재직',color:'#2ecfa8'},
+        {id:'s3',name:'김지민',rank:'사원',leave:0,status:'재직',color:'#ff7c4f'},
+      ];
+      // 기존 직원 정보에서 커스텀 필드(담당 건수 등)는 유지하고 이름/직급만 교체
+      DB.staff=_real.map(r=>{const old=DB.staff.find(s=>s.id===r.id);return old?{...old,...r}:r;});
+      await save();
+    }
   } else await seed();
   // 기존 세션 확인
   const sess=await S.get('intax-session');
@@ -713,9 +725,9 @@ async function seed(){
     {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
   ];
   DB.staff=[
-    {id:'s1',name:'김세무',rank:'세무사',leave:12,status:'재직',color:'#4f7eff'},
-    {id:'s2',name:'이기장',rank:'주임',leave:8,status:'재직',color:'#2ecfa8'},
-    {id:'s3',name:'박회계',rank:'사원',leave:15,status:'재직',color:'#ff7c4f'},
+    {id:'s1',name:'강수민',rank:'세무사',leave:0,status:'재직',color:'#4f7eff'},
+    {id:'s2',name:'이지우',rank:'주임',leave:0,status:'재직',color:'#2ecfa8'},
+    {id:'s3',name:'김지민',rank:'사원',leave:0,status:'재직',color:'#ff7c4f'},
   ];
   const secs=['제조업','도소매','서비스','음식업','건설업','IT','부동산','기타'];
   const names=['가나다 주식회사','나다라 상사','다라마 컨설팅','라마바 F&B','마바사 건설','바사아 솔루션','사아자 부동산','아자차 물산','자차카 서비스','차카타 상회','카타파 주식회사','타파하 개인','파하가 기업','하가나 코퍼레이션','가나다 무역'];
@@ -832,6 +844,18 @@ function rDash(){
   const cd=mos.map((_,i)=>Math.max(3,act.length-5+i+Math.floor(Math.random()*3)));
   mkBar('ch-revenue',mos,fd,'기장료','#4f7eff');
   mkBar('ch-clients',mos,cd,'거래처','#2ecfa8');
+
+  // 거래처 분포 차트 (법인/개인, 업종별, CMS)
+  const types={법인:0,개인:0};
+  DB.clients.forEach(c=>types[c.type]=(types[c.type]||0)+1);
+  mkDonut('ch-type',Object.keys(types),Object.values(types),['#4f7eff','#2ecfa8']);
+  const sm={};
+  DB.clients.forEach(c=>sm[c.sector]=(sm[c.sector]||0)+1);
+  const se=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  mkHBar('ch-sector',se.map(x=>x[0]),se.map(x=>x[1]),'#ff7c4f');
+  const cm={납부:0,미납:0,체납:0};
+  DB.clients.filter(c=>c.cms==='Y').forEach(c=>cm[c.cms_status]=(cm[c.cms_status]||0)+1);
+  mkDonut('ch-cms',Object.keys(cm),Object.values(cm),['#2ecfa8','#ffb830','#f05c5c']);
 }
 
 document.getElementById('period-tabs').addEventListener('click',e=>{
@@ -903,17 +927,6 @@ function rClients(){
       </div></td>
     </tr>`).join(''):'<tr><td colspan="13" class="empty">조건에 맞는 거래처 없음</td></tr>';
 
-  // charts
-  const types={법인:0,개인:0};
-  DB.clients.forEach(c=>types[c.type]=(types[c.type]||0)+1);
-  mkDonut('ch-type',Object.keys(types),Object.values(types),['#4f7eff','#2ecfa8']);
-  const sm={};
-  DB.clients.forEach(c=>sm[c.sector]=(sm[c.sector]||0)+1);
-  const se=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  mkHBar('ch-sector',se.map(x=>x[0]),se.map(x=>x[1]),'#ff7c4f');
-  const cm={납부:0,미납:0,체납:0};
-  DB.clients.filter(c=>c.cms==='Y').forEach(c=>cm[c.cms_status]=(cm[c.cms_status]||0)+1);
-  mkDonut('ch-cms',Object.keys(cm),Object.values(cm),['#2ecfa8','#ffb830','#f05c5c']);
 }
 
 ['f-div','f-type','f-status','f-sector','f-cms','f-staff','f-size'].forEach(id=>{
