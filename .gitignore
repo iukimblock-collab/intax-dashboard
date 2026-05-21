@@ -6,6 +6,11 @@
 
 # 원본 텍스트 파일도 제외
 .env.txt
+.env(hometax).txt
+
+# 인증서 파일 및 DPAPI 암호화 볼트 (민감 정보)
+certs/
+*.vault
 
 # Node.js
 node_modules/
