@@ -179,6 +179,8 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 /* ── 테이블 패널 (필터바 + 표 통합 컨테이너) ── */
 .tbl-panel{border:1px solid var(--border);border-radius:var(--r12);overflow:hidden}
 .tbl-panel .tbl-wrap{border:none;border-radius:0}
+/* ── 스티키 헤더: 거래처·기장료 페이지 테이블 ── */
+#page-clients .tbl-wrap,#page-fees .tbl-wrap{max-height:calc(100vh - var(--hh) - 220px);overflow-y:auto}
 /* ── 거래처 필터바 ── */
 .cl-filterbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
 .cl-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -381,6 +383,8 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
             <select id="f-status" class="filter-sel"><option value="">상태 전체</option><option>정상</option><option>폐업</option></select>
             <select id="f-sector" class="filter-sel"><option value="">업종 전체</option></select>
             <select id="f-staff" class="filter-sel"><option value="">담당자 전체</option></select>
+            <span id="fi-sector" style="display:none"></span>
+            <span id="fi-staff" style="display:none"></span>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
             <span id="f-cnt" class="f-cnt-text"></span>
@@ -403,11 +407,9 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
                 <th class="th-filter" data-fid="f-kw" style="cursor:pointer;user-select:none">업체명 <span class="f-ind" id="fi-kw"></span></th>
                 <th class="th-filter" data-fid="f-bizno" style="cursor:pointer;user-select:none">사업자번호 <span class="f-ind" id="fi-bizno"></span></th>
                 <th>상태</th>
-                <th class="th-filter" data-fid="f-sector" style="cursor:pointer;user-select:none;display:none">업종숨김<span class="f-ind" id="fi-sector"></span></th>
                 <th class="th-filter" data-fid="f-size" style="cursor:pointer;user-select:none">업종/규모 <span class="f-ind" id="fi-size"></span></th>
                 <th>기장료</th>
                 <th class="th-filter" data-fid="f-cms" style="cursor:pointer;user-select:none">CMS <span class="f-ind" id="fi-cms"></span></th>
-                <th class="th-filter" data-fid="f-staff" style="cursor:pointer;user-select:none;display:none">담당숨김<span class="f-ind" id="fi-staff"></span></th>
                 <th>담당직원</th>
                 <th class="th-filter" data-fid="f-phone" style="cursor:pointer;user-select:none">연락처 <span class="f-ind" id="fi-phone"></span></th>
                 <th>액션</th>
@@ -916,7 +918,7 @@ function rClients(){
       <td class="fw5">${c.name}</td>
       <td class="mono">${c.biz_no}</td>
       <td><span class="dot ${c.status==='정상'?'dg':'dr'}"></span>${c.status}</td>
-      <td>${c.sector}</td><td class="tc-m">${c.size}</td>
+      <td class="tc-m"><div style="font-size:12.5px">${c.sector||'—'}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${c.size||''}</div></td>
       <td class="mono">${fmt(c.fee)}원</td>
       <td><span class="tag ${c.cms==='Y'?'tag-green':'tag-gray'}">${c.cms==='Y'?'적용':'미적용'}</span></td>
       <td>${sn(c.staff_id)}</td>
@@ -925,7 +927,7 @@ function rClients(){
         <button class="btn btn-ghost btn-sm btn-edit-only" onclick="openCM('${c.id}')">수정</button>
         <button class="btn btn-danger btn-sm btn-edit-only" onclick="delC('${c.id}')">삭제</button>
       </div></td>
-    </tr>`).join(''):'<tr><td colspan="13" class="empty">조건에 맞는 거래처 없음</td></tr>';
+    </tr>`).join(''):'<tr><td colspan="12" class="empty">조건에 맞는 거래처 없음</td></tr>';
 
 }
 
