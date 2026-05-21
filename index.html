@@ -24,9 +24,10 @@
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14.5px;line-height:1.6}
 button,input,select,textarea{font-family:var(--font)}
-::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 #shell{display:flex;height:100vh;overflow:hidden}
 #sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 #logo{padding:18px 20px 14px;border-bottom:1px solid var(--border)}
@@ -76,10 +77,11 @@ button,input,select,textarea{font-family:var(--font)}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .tbl-wrap{overflow-x:auto;border-radius:var(--r12);border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
-thead th{text-align:left;padding:9px 12px;font-size:11.5px;font-weight:500;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
-tbody td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+thead th{text-align:left;padding:10px 14px;font-size:11.5px;font-weight:500;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:10}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
-tbody tr:hover{background:var(--surface2)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.018)}
+tbody tr:hover{background:var(--surface3)!important}
 .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:500}
 .tag-blue{background:var(--accent-a);color:var(--accent)}
 .tag-green{background:var(--green-a);color:var(--green)}
@@ -174,6 +176,29 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 /* 로그아웃 버튼 */
 #logout-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:var(--r8);font-size:12.5px;color:var(--muted);cursor:pointer;border:1px solid var(--border);background:transparent;margin-top:auto;width:calc(100% - 32px);margin:8px 16px}
 #logout-btn:hover{background:var(--surface2);color:var(--text)}
+/* ── 테이블 패널 (필터바 + 표 통합 컨테이너) ── */
+.tbl-panel{border:1px solid var(--border);border-radius:var(--r12);overflow:hidden}
+.tbl-panel .tbl-wrap{border:none;border-radius:0}
+/* ── 거래처 필터바 ── */
+.cl-filterbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cl-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.filter-sel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);padding:4px 8px 4px 10px;font-size:12.5px;color:var(--text);outline:none;cursor:pointer;font-family:var(--font);transition:border .15s;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237b829a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+.filter-sel:focus,.filter-sel:hover{border-color:var(--border2)}
+.filter-sel.active{border-color:var(--accent);color:var(--accent);background-color:var(--accent-a)}
+.f-cnt-text{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.f-cnt-text .cnt-num{font-family:var(--mono);color:var(--text)}
+.f-cnt-text .cnt-filtered{font-family:var(--mono);color:var(--accent)}
+/* ── 카드 hover 개선 ── */
+.card{transition:border-color .2s}
+.card:hover{border-color:var(--border2)}
+/* ── 태그 패딩 개선 ── */
+.tag{padding:3px 9px}
+/* ── 네비게이션 배지 색상 강조 ── */
+.nav-item.active .nav-badge{background:var(--accent-a);color:var(--accent)}
+/* ── 빈 상태 개선 ── */
+.empty{padding:40px;color:var(--dim);font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:8px}
+/* ── 홈택스 동기화 바 (패널 내부용) ── */
+.tbl-panel #htx-sync-bar{border-radius:0;border-left:none;border-right:none;border-top:none}
 </style>
 </head>
 <body>
@@ -191,7 +216,7 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
     <button class="login-btn" onclick="doLogin()">로그인</button>
     <button class="login-btn" style="background:transparent;border:1px solid var(--border2);color:var(--muted);margin-top:8px" onclick="showRegister()">계정 생성</button>
     <div class="login-hint">
-      대표 계정: <b>김인욱</b> / <b>12345678</b><br/>
+      대표 계정: <b>김인욱</b> / <b>1234</b><br/>
       직원 계정은 설정에서 추가 후 사용하세요
     </div>
   </div>
@@ -332,20 +357,11 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
         <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">업종별 분포</div><canvas id="ch-sector" height="120"></canvas></div>
         <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">CMS 납부 현황</div><div style="height:160px;position:relative"><canvas id="ch-cms"></canvas></div></div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:6px">
-        <span id="f-cnt" class="tc-m" style="font-size:12px"></span>
-        <button class="btn btn-ghost btn-sm" onclick="resetF()">필터 초기화</button>
-      </div>
-      <!-- 숨겨진 필터 input/select (JS가 읽음) -->
-      <select id="f-div" style="display:none"><option value="">전체</option><option>기장</option><option>신고대리</option></select>
-      <select id="f-type" style="display:none"><option value="">전체</option><option>법인</option><option>개인</option></select>
+      <!-- 숨김 필터 (팝업·검색용) -->
       <input type="search" id="f-kw" style="display:none"/>
       <input type="search" id="f-bizno" style="display:none"/>
-      <select id="f-status" style="display:none"><option value="">전체</option><option>정상</option><option>폐업</option></select>
-      <select id="f-sector" style="display:none"><option value="">전체</option></select>
       <select id="f-size" style="display:none"><option value="">전체</option><option>중소기업</option><option>소상공인</option><option>개인사업자</option></select>
       <select id="f-cms" style="display:none"><option value="">전체</option><option value="Y">적용</option><option value="N">미적용</option></select>
-      <select id="f-staff" style="display:none"><option value="">전체</option></select>
       <input type="search" id="f-phone" style="display:none"/>
       <!-- 필터 팝업 -->
       <div id="f-popup" style="display:none;position:fixed;z-index:500;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 12px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
@@ -355,32 +371,51 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
           <button class="btn btn-primary btn-sm" onclick="applyFilterPopup()">적용</button>
         </div>
       </div>
-      <!-- 홈택스 동기화 상태 바 -->
-      <div id="htx-sync-bar" style="display:none;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:var(--green-a);border:1px solid rgba(46,207,168,0.25);border-radius:var(--r8);font-size:12.5px;color:var(--green)">
-        <span id="htx-sync-msg"></span>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('htx-sync-bar').style.display='none'">닫기</button>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr id="cl-thead-row">
-              <th>#</th>
-              <th class="th-filter" data-fid="f-div" style="cursor:pointer;user-select:none">구분 <span class="f-ind" id="fi-div"></span></th>
-              <th class="th-filter" data-fid="f-type" style="cursor:pointer;user-select:none">유형 <span class="f-ind" id="fi-type"></span></th>
-              <th class="th-filter" data-fid="f-kw" style="cursor:pointer;user-select:none">업체명 <span class="f-ind" id="fi-kw"></span></th>
-              <th class="th-filter" data-fid="f-bizno" style="cursor:pointer;user-select:none">사업자번호 <span class="f-ind" id="fi-bizno"></span></th>
-              <th class="th-filter" data-fid="f-status" style="cursor:pointer;user-select:none">상태 <span class="f-ind" id="fi-status"></span></th>
-              <th class="th-filter" data-fid="f-sector" style="cursor:pointer;user-select:none">업종 <span class="f-ind" id="fi-sector"></span></th>
-              <th class="th-filter" data-fid="f-size" style="cursor:pointer;user-select:none">규모 <span class="f-ind" id="fi-size"></span></th>
-              <th>기장료</th>
-              <th class="th-filter" data-fid="f-cms" style="cursor:pointer;user-select:none">CMS <span class="f-ind" id="fi-cms"></span></th>
-              <th class="th-filter" data-fid="f-staff" style="cursor:pointer;user-select:none">담당직원 <span class="f-ind" id="fi-staff"></span></th>
-              <th class="th-filter" data-fid="f-phone" style="cursor:pointer;user-select:none">연락처 <span class="f-ind" id="fi-phone"></span></th>
-              <th>액션</th>
-            </tr>
-          </thead>
-          <tbody id="cl-tbody"></tbody>
-        </table>
+      <!-- 테이블 패널 -->
+      <div class="tbl-panel">
+        <!-- 필터바 -->
+        <div class="cl-filterbar">
+          <div class="cl-filters">
+            <select id="f-div" class="filter-sel"><option value="">구분 전체</option><option>기장</option><option>신고대리</option></select>
+            <select id="f-type" class="filter-sel"><option value="">유형 전체</option><option>법인</option><option>개인</option></select>
+            <select id="f-status" class="filter-sel"><option value="">상태 전체</option><option>정상</option><option>폐업</option></select>
+            <select id="f-sector" class="filter-sel"><option value="">업종 전체</option></select>
+            <select id="f-staff" class="filter-sel"><option value="">담당자 전체</option></select>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="f-cnt" class="f-cnt-text"></span>
+            <button class="btn btn-ghost btn-sm" onclick="resetF()">초기화</button>
+          </div>
+        </div>
+        <!-- 홈택스 동기화 알림 -->
+        <div id="htx-sync-bar" style="display:none;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:var(--green-a);border-bottom:1px solid rgba(46,207,168,0.25);font-size:12.5px;color:var(--green)">
+          <span id="htx-sync-msg"></span>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('htx-sync-bar').style.display='none'">닫기</button>
+        </div>
+        <!-- 거래처 표 -->
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr id="cl-thead-row">
+                <th>#</th>
+                <th>구분</th>
+                <th>유형</th>
+                <th class="th-filter" data-fid="f-kw" style="cursor:pointer;user-select:none">업체명 <span class="f-ind" id="fi-kw"></span></th>
+                <th class="th-filter" data-fid="f-bizno" style="cursor:pointer;user-select:none">사업자번호 <span class="f-ind" id="fi-bizno"></span></th>
+                <th>상태</th>
+                <th class="th-filter" data-fid="f-sector" style="cursor:pointer;user-select:none;display:none">업종숨김<span class="f-ind" id="fi-sector"></span></th>
+                <th class="th-filter" data-fid="f-size" style="cursor:pointer;user-select:none">업종/규모 <span class="f-ind" id="fi-size"></span></th>
+                <th>기장료</th>
+                <th class="th-filter" data-fid="f-cms" style="cursor:pointer;user-select:none">CMS <span class="f-ind" id="fi-cms"></span></th>
+                <th class="th-filter" data-fid="f-staff" style="cursor:pointer;user-select:none;display:none">담당숨김<span class="f-ind" id="fi-staff"></span></th>
+                <th>담당직원</th>
+                <th class="th-filter" data-fid="f-phone" style="cursor:pointer;user-select:none">연락처 <span class="f-ind" id="fi-phone"></span></th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="cl-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -577,7 +612,7 @@ const S={
 };
 
 // ─── DB ──────────────────────────────────────────
-let DB={clients:[],staff:[],notices:[],users:[{id:'u1',name:'김인욱',role:'대표',pw:'12345678',loginId:'김인욱'}]};
+let DB={clients:[],staff:[],notices:[],users:[{id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱'}]};
 let CUR='dashboard', EID=null, ME=null;
 const CI={};
 
@@ -586,11 +621,9 @@ async function init(){
   const saved=await S.get('intax-v2');
   if(saved){
     DB=saved;
-    // 관리자 계정 업데이트 (아이디/비밀번호 변경 반영)
-    const adm=(DB.users||[]).find(u=>u.id==='u1');
-    if(adm){adm.name='김인욱';adm.loginId='김인욱';adm.pw='12345678';adm.role='대표';}
-    else if(!DB.users) DB.users=[{id:'u1',name:'김인욱',role:'대표',pw:'12345678',loginId:'김인욱',access:'전체'}];
-    await save();
+    // 관리자 계정 누락 시 보완 (비밀번호는 저장된 값 유지)
+    if(!DB.users) DB.users=[{id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'}];
+    else if(!(DB.users||[]).find(u=>u.id==='u1')) DB.users.unshift({id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'});
   } else await seed();
   // 기존 세션 확인
   const sess=await S.get('intax-session');
@@ -677,8 +710,7 @@ document.addEventListener('keydown',e=>{
 
 async function seed(){
   DB.users=[
-    {id:'u1',name:'김인욱',role:'대표',pw:'12345678',loginId:'김인욱',access:'전체'},
-    {id:'u2',name:'김세무',role:'직원',pw:'1234',loginId:'staff1',access:'거래처, 기장료 제외'},
+    {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
   ];
   DB.staff=[
     {id:'s1',name:'김세무',rank:'세무사',leave:12,status:'재직',color:'#4f7eff'},
@@ -843,7 +875,13 @@ function rClients(){
   if(kw)     list=list.filter(c=>c.name.toLowerCase().includes(kw));
   if(kbiz)   list=list.filter(c=>c.biz_no.toLowerCase().includes(kbiz));
   if(kphone) list=list.filter(c=>c.phone.toLowerCase().includes(kphone));
-  document.getElementById('f-cnt').textContent=list.length+'건';
+  const _total=DB.clients.length;
+  const _fCnt=document.getElementById('f-cnt');
+  if(list.length===_total){
+    _fCnt.innerHTML=`전체 <span class="cnt-num">${_total.toLocaleString()}</span>건`;
+  } else {
+    _fCnt.innerHTML=`전체 <span class="cnt-num">${_total.toLocaleString()}</span>건 중 <span class="cnt-filtered">${list.length.toLocaleString()}</span>건 표시`;
+  }
 
   const tb=document.getElementById('cl-tbody');
   tb.innerHTML=list.length?list.map((c,i)=>`
@@ -1645,6 +1683,9 @@ function updateFilterIndicators() {
     const th  = document.querySelector(`[data-fid="${fid}"]`);
     if (ind) { ind.textContent = val ? '▲' : '⬍'; ind.className = val ? 'f-ind on' : 'f-ind'; }
     if (th)  th.classList.toggle('f-active', !!val);
+    // visible filter-sel gets .active class when a value is selected
+    const sel = document.querySelector(`.filter-sel#${fid}`);
+    if (sel) sel.classList.toggle('active', !!val);
   });
 }
 
