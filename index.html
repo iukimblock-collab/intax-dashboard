@@ -274,6 +274,8 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
     <div id="tb-right">
       <input class="tb-search" id="g-search" type="search" placeholder="거래처, 직원 검색…"/>
       <button class="btn btn-ghost btn-sm" id="btn-export" style="display:none" onclick="exportCSV()">↓ CSV</button>
+      <button class="btn btn-ghost btn-sm role-boss-only" id="btn-htx-import" style="display:none" onclick="document.getElementById('htx-file').click()">↑ 홈택스 가져오기</button>
+      <input type="file" id="htx-file" accept=".json" style="display:none" onchange="importHometaxFile(event)"/>
       <button class="btn btn-primary btn-sm" id="btn-add" style="display:none"></button>
     </div>
   </header>
@@ -352,6 +354,11 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
           <button class="btn btn-ghost btn-sm" onclick="closeFilterPopup()">닫기</button>
           <button class="btn btn-primary btn-sm" onclick="applyFilterPopup()">적용</button>
         </div>
+      </div>
+      <!-- 홈택스 동기화 상태 바 -->
+      <div id="htx-sync-bar" style="display:none;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:var(--green-a);border:1px solid rgba(46,207,168,0.25);border-radius:var(--r8);font-size:12.5px;color:var(--green)">
+        <span id="htx-sync-msg"></span>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('htx-sync-bar').style.display='none'">닫기</button>
       </div>
       <div class="tbl-wrap">
         <table>
@@ -524,7 +531,7 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
         <div>
           <div class="sh"><span class="sh-title">데이터 연동 상태</span></div>
           <div class="card" style="display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;background:var(--surface2);border-radius:var(--r8)"><span>홈택스 (바로빌 API)</span><span class="tag tag-orange">미연결</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;background:var(--surface2);border-radius:var(--r8)"><span>홈택스 가져오기</span><span class="tag" id="htx-status-tag">확인 중</span></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;background:var(--surface2);border-radius:var(--r8)"><span>구글드라이브 (거래처)</span><span class="tag tag-orange">미연결</span></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;background:var(--surface2);border-radius:var(--r8)"><span>CMS 청구 시스템</span><span class="tag tag-orange">미연결</span></div>
           </div>
@@ -722,6 +729,7 @@ function go(p){
   const addLabel=isBoss?m.add:'';
   ba.textContent=addLabel; ba.style.display=addLabel?'':'none';
   document.getElementById('btn-export').style.display=(p==='clients'&&isBoss)?'':'none';
+  document.getElementById('btn-htx-import').style.display=(p==='clients'&&isBoss)?'flex':'none';
   render(p);
 }
 
@@ -1195,6 +1203,24 @@ function rStaff(){
 // ─── SETTINGS ────────────────────────────────────
 function rSettings(){
   const isBoss=ME&&ME.role==='대표';
+  // 홈택스 동기화 상태 업데이트
+  const htxTag=document.getElementById('htx-status-tag');
+  if(htxTag){
+    const lastSync=DB.htxLastSync||null;
+    const hasHtxClients=DB.clients.some(c=>c.htx_synced);
+    if(lastSync){
+      const d=new Date(lastSync);
+      const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      htxTag.className='tag tag-green';
+      htxTag.textContent='동기화됨 '+ds;
+    } else if(hasHtxClients){
+      htxTag.className='tag tag-green';
+      htxTag.textContent='연결됨';
+    } else {
+      htxTag.className='tag tag-orange';
+      htxTag.textContent='미동기화';
+    }
+  }
   const tb=document.getElementById('acc-tbody');
   tb.innerHTML=(DB.users||[]).map(u=>{
     const isMe=ME&&u.id===ME.id;
@@ -1439,6 +1465,70 @@ async function doReset(){
   await save(); render(CUR); alert('초기화 완료');
 }
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+
+// ─── HOMETAX IMPORT ──────────────────────────────
+function importHometaxFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    let data;
+    try{data=JSON.parse(ev.target.result);}
+    catch{alert('JSON 파일을 파싱할 수 없습니다. 올바른 홈택스 가져오기 형식인지 확인하세요.');e.target.value='';return;}
+    if(!data.clients||!Array.isArray(data.clients)){
+      alert('올바른 홈택스 가져오기 파일 형식이 아닙니다.\n{"clients":[...]} 형태여야 합니다.');
+      e.target.value=''; return;
+    }
+    let added=0,updated=0,skipped=0;
+    const divMap={'기장':'기장','신고대리':'신고대리','수임':'기장','신고':'신고대리'};
+    const typeMap={'법인':'법인','개인':'개인','개인사업자':'개인'};
+    const baseTs=Date.now();let idSeq=0;
+    for(const hc of data.clients){
+      if(!hc.biz_no&&!hc.name){skipped++;continue;}
+      const bizNo=(hc.biz_no||'').replace(/[^0-9\-]/g,'');
+      const existing=bizNo?DB.clients.find(c=>c.biz_no===bizNo):null;
+      const div=divMap[hc.div]||divMap[hc.수임구분]||'기장';
+      const type=typeMap[hc.type]||typeMap[hc.법인구분]||'개인';
+      const name=hc.name||hc['상호(법인명)']||hc.상호||'(이름없음)';
+      const sector=hc.sector||hc.종목||hc.업태||'';
+      const status=(hc.status||hc.상태||'정상')==='폐업'?'폐업':'정상';
+      if(existing){
+        existing.name=name;
+        existing.div=div;
+        existing.type=type;
+        existing.sector=sector;
+        existing.status=status;
+        existing.htx_synced=true;
+        if(hc.hometax_id) existing.hometax_id=hc.hometax_id;
+        updated++;
+      } else {
+        const newId='c'+baseTs+'_'+(idSeq++);
+        DB.clients.push({
+          id:newId,name,div,biz_no:bizNo,type,status,
+          sector,size:hc.size||hc.규모||'개인사업자',
+          fee:Number(hc.fee)||0,cms:'N',cms_status:'미납',
+          staff_id:'',phone:hc.phone||'',
+          hometax_id:hc.hometax_id||'',karinara_id:'',note:'',
+          htx_synced:true
+        });
+        added++;
+      }
+    }
+    DB.htxLastSync=new Date().toISOString();
+    await save();
+    render(CUR);
+    // 동기화 결과 알림 바 표시
+    const bar=document.getElementById('htx-sync-bar');
+    const msg=document.getElementById('htx-sync-msg');
+    if(bar&&msg){
+      msg.textContent=`홈택스 동기화 완료 — 신규 ${added}건, 업데이트 ${updated}건${skipped?`, 건너뜀 ${skipped}건`:''}`;
+      bar.style.display='flex';
+    } else {
+      alert(`홈택스 동기화 완료\n신규: ${added}건 | 업데이트: ${updated}건${skipped?` | 건너뜀: ${skipped}건`:''}`);
+    }
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
 
 // ─── CHARTS ──────────────────────────────────────
 const CD={
