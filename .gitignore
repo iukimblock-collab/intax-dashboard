@@ -25,6 +25,10 @@ venv/
 # Claude Code 설정 (로컬 전용)
 .claude/
 
+# 원본 데이터 파일 (실제 납세자·업체 정보 포함, 민감 데이터)
+*.xls
+*.xlsx
+
 # OS
 .DS_Store
 Thumbs.db
