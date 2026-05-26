@@ -354,6 +354,14 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
           <div class="tbl-wrap"><table><thead><tr><th>직원명</th><th>담당 수</th><th>상태</th></tr></thead><tbody id="d-staff"></tbody></table></div>
         </div>
       </div>
+      <!-- 홈택스 동기화 상태 표시 -->
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;padding:11px 18px;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12.5px;color:var(--muted)">홈택스 동기화</span>
+          <span id="dash-htx-badge" class="tag tag-gray">확인 중</span>
+        </div>
+        <span id="dash-htx-time" style="font-size:12px;color:var(--muted);font-family:var(--mono)"></span>
+      </div>
     </div>
 
     <!-- ── CLIENTS ── -->
@@ -574,8 +582,39 @@ let DB={clients:[],staff:[],notices:[],users:[{id:'u1',name:'김인욱',role:'�
 let CUR='dashboard', EID=null, ME=null;
 const CI={};
 
+// ─── REMOTE SYNC ──────────────────────────────────
+const REMOTE_BACKUP_URL='https://raw.githubusercontent.com/iukimblock-collab/intax-dashboard/main/intax_backup.json';
+
+async function tryRemoteSync(){
+  // 로컬 데이터가 충분히 있으면 원격 동기화 건너뜀
+  const db=await S.get('intax-v2');
+  if(db&&db.clients&&db.clients.length>0) return;
+  try{
+    const resp=await fetch(REMOTE_BACKUP_URL,{cache:'no-store'});
+    if(!resp.ok) return;
+    const backup=await resp.json();
+    if(!backup.clients||!Array.isArray(backup.clients)||backup.clients.length===0) return;
+    // meta 정보 보존하여 DB에 병합
+    if(!DB.clients||DB.clients.length===0){
+      DB.clients=backup.clients;
+      DB.staff=backup.staff||DB.staff;
+      DB.notices=backup.notices||DB.notices;
+      // users는 덮어쓰지 않음 (로컬 계정 우선)
+      if(backup.meta) DB.meta=backup.meta;
+      if(backup.htxLastSync) DB.htxLastSync=backup.htxLastSync;
+      else if(backup.meta&&backup.meta.hometax_synced_at) DB.htxLastSync=backup.meta.hometax_synced_at;
+      await save();
+      console.log('[INTAX] 원격 데이터 로드 완료. 거래처:',backup.clients.length,'건, 동기화:',backup.meta&&backup.meta.hometax_synced_at);
+    }
+  }catch(e){
+    console.warn('[INTAX] 원격 동기화 실패 (오프라인?):', e.message||e);
+  }
+}
+
 // ─── AUTH ─────────────────────────────────────────
 async function init(){
+  // 로컬 데이터 없으면 GitHub에서 원격 로드 시도
+  await tryRemoteSync();
   const saved=await S.get('intax-v2');
   if(saved){
     DB=saved;
@@ -818,6 +857,29 @@ function rDash(){
   const cm={납부:0,미납:0,체납:0};
   DB.clients.filter(c=>c.cms==='Y').forEach(c=>cm[c.cms_status]=(cm[c.cms_status]||0)+1);
   mkDonut('ch-cms',Object.keys(cm),Object.values(cm),['#2ecfa8','#ffb830','#f05c5c']);
+
+  // 홈택스 동기화 상태 카드 업데이트
+  const badge=document.getElementById('dash-htx-badge');
+  const timeEl=document.getElementById('dash-htx-time');
+  if(badge&&timeEl){
+    // meta.hometax_synced_at 우선, 없으면 DB.htxLastSync 사용
+    const syncTs=(DB.meta&&DB.meta.hometax_synced_at)||DB.htxLastSync||null;
+    if(syncTs){
+      const d=new Date(syncTs);
+      const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      badge.className='tag tag-green';
+      badge.textContent='동기화됨';
+      timeEl.textContent='마지막 동기화: '+ds;
+    } else if(DB.clients.some(c=>c.htx_synced)){
+      badge.className='tag tag-green';
+      badge.textContent='연결됨';
+      timeEl.textContent='동기화 시각 없음';
+    } else {
+      badge.className='tag tag-orange';
+      badge.textContent='미동기화';
+      timeEl.textContent='홈택스 동기화 필요';
+    }
+  }
 }
 
 document.getElementById('period-tabs').addEventListener('click',e=>{

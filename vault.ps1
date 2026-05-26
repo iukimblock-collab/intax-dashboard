@@ -6,6 +6,18 @@
 #   .\vault.ps1 -Service hometax show       Display stored credentials
 #   .\vault.ps1 -Service hometax get PASSWORD   Get specific key value
 #   .\vault.ps1 list                         List all vaults
+#
+# [홈택스 자동화 연동 설정]
+# hometax_auto_sync.ps1을 사용하려면 .env(hometax).txt에 두 키를 모두 작성하세요:
+#
+#   PASSWORD=홈택스비밀번호
+#   CERT_PIN=공동인증서PIN번호
+#
+# 작성 후 아래 명령으로 vault를 재생성하세요:
+#   .\vault.ps1 -Service hometax init
+#
+# CERT_PIN은 DPAPI로 암호화되어 .hometax.vault에 저장됩니다.
+# 절대 평문으로 스크립트나 로그에 기록하지 마세요.
 
 param(
     [Parameter(Position=0)]
