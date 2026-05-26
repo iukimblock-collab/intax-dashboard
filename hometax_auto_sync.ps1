@@ -324,6 +324,9 @@ if (-not $SkipBrowser) {
 (function(){
   // 공동인증서 로그인 탭 (홈택스 UI 기준)
   var selectors = [
+    '#mf_txppWframe_login_tab7',
+    '.w2troup.privLofin',
+    '.login_tabcont.privLofin',
     'a[href*="cert"]',
     'li[id*="cert"]',
     '.login-tab:nth-child(2)',
