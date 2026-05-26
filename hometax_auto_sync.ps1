@@ -401,9 +401,13 @@ if (-not $SkipBrowser) {
 
     if ($certSelResp.result.result.value -eq "cert-not-found") {
         LogWarn "인택스 인증서를 자동으로 찾지 못했습니다."
-        LogWarn "자동 선택 실패 — 홈택스 인증서 창에서 인택스(97769) 인증서를 수동으로 선택 후 스크립트를 재실행하세요."
-        LogWarn "재실행 시 -SkipBrowser 없이 실행하면 로그인까지 자동으로 진행됩니다."
-        exit 1
+        LogWarn "홈택스 인증서 창에서 인택스(97769) 인증서를 수동으로 선택해 주세요."
+        try {
+            Read-Host "인증서 선택 완료 후 엔터"
+        } catch {
+            LogErr "비대화형 모드에서는 수동 선택 불가. 사용자 터미널에서 실행하세요."
+            exit 1
+        }
     }
 
     # ── PIN 입력 ─────────────────────────────────────────
