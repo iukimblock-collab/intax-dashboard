@@ -1,4 +1,4 @@
-# ================================================================
+﻿# ================================================================
 # hometax_import.ps1
 # 홈택스 엑셀 다운로드 → hometax_data.json 변환 스크립트
 #
@@ -254,8 +254,9 @@ $output = [PSCustomObject]@{
 }
 
 $json = $output | ConvertTo-Json -Depth 5
+$absOutput = if ([System.IO.Path]::IsPathRooted($OutputFile)) { $OutputFile } else { Join-Path (Get-Location) $OutputFile }
 [System.IO.File]::WriteAllText(
-    (Join-Path (Get-Location) $OutputFile),
+    $absOutput,
     $json,
     [System.Text.Encoding]::UTF8
 )
@@ -268,3 +269,4 @@ Write-Host "  2. [거래처 현황] 메뉴 이동"
 Write-Host "  3. [홈택스 가져오기] 버튼 클릭"
 Write-Host "  4. 생성된 '$OutputFile' 파일 선택"
 Write-Host ""
+exit 0

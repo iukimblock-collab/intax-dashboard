@@ -527,6 +527,9 @@ if (-not $SkipBrowser) {
     $downloadJs = @"
 (function(){
   var candidates = [
+    document.getElementById('mf_txppWframe_trigger44'),
+    document.querySelector('.w2trigger[id*="trigger44"]'),
+    document.querySelector('.w2trigger[id*="excel"]'),
     document.getElementById('excelDownload'),
     document.querySelector('[id*="excel"]'),
     document.querySelector('[id*="Excel"]'),
@@ -539,7 +542,7 @@ if (-not $SkipBrowser) {
     if(candidates[i]){ candidates[i].click(); return 'excel-clicked:'+candidates[i].id; }
   }
   // 텍스트 탐색
-  var all = document.querySelectorAll('button, a, input[type="button"]');
+  var all = document.querySelectorAll('button, a, input[type="button"], .w2trigger');
   for(var j=0; j<all.length; j++){
     var t = all[j].textContent.trim();
     if(t.indexOf('엑셀') >= 0 || t.indexOf('Excel') >= 0 || t.indexOf('EXCEL') >= 0){
