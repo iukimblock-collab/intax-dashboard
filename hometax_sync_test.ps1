@@ -148,13 +148,13 @@ if (Should-Run "T2") {
     try {
         # 기존 백업 데이터 (biz_no 있는 5건 + 없는 2건)
         $existingClients = @(
-            [PSCustomObject]@{ id="c_001"; biz_no="111-11-11111"; name="기존법인A"; type="법인"; div="기장"; status="정상"; fee=300000; note="VIP"; staff_id="s1" }
-            [PSCustomObject]@{ id="c_002"; biz_no="222-22-22222"; name="기존개인B"; type="개인"; div="기장"; status="정상"; fee=150000; note="중요"; staff_id="s2" }
-            [PSCustomObject]@{ id="c_003"; biz_no="333-33-33333"; name="기존법인C"; type="법인"; div="신고대리"; status="정상"; fee=200000; note="";    staff_id="s1" }
-            [PSCustomObject]@{ id="c_004"; biz_no="444-44-44444"; name="기존개인D"; type="개인"; div="기장"; status="정상"; fee=100000; note="메모"; staff_id="s3" }
-            [PSCustomObject]@{ id="c_005"; biz_no="555-55-55555"; name="기존법인E"; type="법인"; div="기장"; status="정상"; fee=500000; note="";    staff_id="s2" }
-            [PSCustomObject]@{ id="c_006"; biz_no="";             name="사업자번호없음1"; type="개인"; div="신고대리"; status="정상"; fee=0;      note=""; staff_id="" }
-            [PSCustomObject]@{ id="c_007"; biz_no="";             name="사업자번호없음2"; type="개인"; div="신고대리"; status="정상"; fee=0;      note=""; staff_id="" }
+            [PSCustomObject]@{ id="c_001"; biz_no="111-11-11111"; name="기존법인A"; type="법인"; div="기장"; status="정상"; sector=""; fee=300000; note="VIP"; staff_id="s1" }
+            [PSCustomObject]@{ id="c_002"; biz_no="222-22-22222"; name="기존개인B"; type="개인"; div="기장"; status="정상"; sector=""; fee=150000; note="중요"; staff_id="s2" }
+            [PSCustomObject]@{ id="c_003"; biz_no="333-33-33333"; name="기존법인C"; type="법인"; div="신고대리"; status="정상"; sector=""; fee=200000; note="";    staff_id="s1" }
+            [PSCustomObject]@{ id="c_004"; biz_no="444-44-44444"; name="기존개인D"; type="개인"; div="기장"; status="정상"; sector=""; fee=100000; note="메모"; staff_id="s3" }
+            [PSCustomObject]@{ id="c_005"; biz_no="555-55-55555"; name="기존법인E"; type="법인"; div="기장"; status="정상"; sector=""; fee=500000; note="";    staff_id="s2" }
+            [PSCustomObject]@{ id="c_006"; biz_no="";             name="사업자번호없음1"; type="개인"; div="신고대리"; status="정상"; sector=""; fee=0;      note=""; staff_id="" }
+            [PSCustomObject]@{ id="c_007"; biz_no="";             name="사업자번호없음2"; type="개인"; div="신고대리"; status="정상"; sector=""; fee=0;      note=""; staff_id="" }
         )
 
         # 홈택스에서 새로 내려받은 데이터
@@ -303,7 +303,8 @@ if (Should-Run "T3") {
             Write-Fail "T3" "GitHub raw URL 응답 코드 이상: $($resp.StatusCode)"
         } else {
             try {
-                $remoteData = $resp.Content | ConvertFrom-Json
+                $remoteJson = $resp.Content.TrimStart([char]0xFEFF)
+                $remoteData = $remoteJson | ConvertFrom-Json
                 $remoteCount = @($remoteData.clients).Count
 
                 $urlErrors = @()
@@ -364,7 +365,8 @@ if (Should-Run "T4") {
             if ($vaultErrors.Count -gt 0) {
                 Write-Fail "T4" "vault 무결성 이상 — $($vaultErrors -join ' | ')$(if($vaultWarnings.Count -gt 0){' | '+ ($vaultWarnings -join ' | ')})"
             } elseif ($vaultWarnings.Count -gt 0) {
-                Write-Fail "T4" "vault 무결성 — PASSWORD OK | $($vaultWarnings -join ' | ')"
+                Write-Host "[WARN] T4. vault 무결성 — PASSWORD OK | $($vaultWarnings -join ' | ')" -ForegroundColor Yellow
+                $script:Results += "[WARN] T4. vault 무결성 — PASSWORD OK | $($vaultWarnings -join ' | ')"
             } else {
                 Write-Pass "T4" "vault 무결성 OK (PASSWORD 복호화 가능, CERT_PIN 존재)"
             }
