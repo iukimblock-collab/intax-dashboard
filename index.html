@@ -151,13 +151,9 @@ tbody tr:hover{background:var(--surface3)!important}
 }
 .th-filter:hover{background:var(--surface3)!important;color:var(--text)!important}
 .th-filter.f-active{color:var(--accent)!important;background:var(--accent-a)!important}
-.fee-th-f:hover{background:var(--surface3)!important;color:var(--text)!important}
-.fee-th-f.f-active{color:var(--accent)!important;background:var(--accent-a)!important}
-[data-sort="fee"]:hover{background:var(--surface3)!important;color:var(--text)!important}
 .f-ind{font-size:9px;opacity:.7;margin-left:2px}
 .f-ind.on{color:var(--accent);opacity:1}
 .sort-ind{font-size:10px;color:var(--muted);margin-left:1px}
-[data-sort="fee"].sort-active .sort-ind{color:var(--accent)}
 #f-popup input:focus,#f-popup select:focus{border-color:var(--accent)}
 #f-popup label{font-size:11.5px;color:var(--muted);display:block;margin-bottom:5px}
 /* ── LOGIN ── */
@@ -186,10 +182,7 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 .tbl-panel .tbl-wrap{border:none;border-radius:0}
 /* ── 스티키 헤더: 거래처 페이지 테이블 (fees는 flex로 처리) ── */
 #page-clients .tbl-wrap{max-height:calc(100vh - var(--hh) - 220px);overflow-y:auto}
-/* ── 기장료 현황: 표가 하단까지 채우도록 ── */
-#page-view:has(#page-fees.active){overflow-y:hidden}
-#page-fees.active{flex:1;min-height:0;overflow:hidden}
-#page-fees .tbl-wrap{flex:1;overflow-y:auto;max-height:none!important}
+
 /* ── 거래처 필터바 ── */
 .cl-filterbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
 .cl-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -273,17 +266,14 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
       <span>거래처 현황</span>
       <span class="nav-badge" id="nav-badge-c">0</span>
     </div>
-    <div class="nav-item role-boss-only" data-page="fees">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      <span>기장료 관리</span>
+
+    <div class="nav-item" data-page="staff">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>직원 현황</span>
     </div>
     <div class="nav-item" data-page="notices">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.4 2 2 0 0 1 3.62 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.9a16 16 0 0 0 6.1 6.09l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       <span>안내문 발송</span>
-    </div>
-    <div class="nav-item" data-page="staff">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>직원 현황</span>
     </div>
     <div class="nav-label">시스템</div>
     <div class="nav-item" data-page="settings">
@@ -372,7 +362,7 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
       <input type="search" id="f-kw" style="display:none"/>
       <input type="search" id="f-bizno" style="display:none"/>
       <select id="f-size" style="display:none"><option value="">전체</option><option>중소기업</option><option>소상공인</option><option>개인사업자</option></select>
-      <select id="f-cms" style="display:none"><option value="">전체</option><option value="Y">적용</option><option value="N">미적용</option></select>
+
       <input type="search" id="f-phone" style="display:none"/>
       <!-- 필터 팝업 -->
       <div id="f-popup" style="display:none;position:fixed;z-index:500;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 12px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
@@ -418,7 +408,6 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
                 <th>상태</th>
                 <th class="th-filter" data-fid="f-size" style="cursor:pointer;user-select:none">업종 <span class="f-ind" id="fi-size"></span></th>
                 <th>기장료</th>
-                <th class="th-filter" data-fid="f-cms" style="cursor:pointer;user-select:none">CMS <span class="f-ind" id="fi-cms"></span></th>
                 <th>담당직원</th>
                 <th class="th-filter" data-fid="f-phone" style="cursor:pointer;user-select:none">연락처 <span class="f-ind" id="fi-phone"></span></th>
                 <th>액션</th>
@@ -430,50 +419,6 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
       </div>
     </div>
 
-    <!-- ── FEES ── -->
-    <div class="page" id="page-fees">
-      <div class="g4">
-        <div class="card"><div class="card-label">기장료 합계 (기장)</div><div class="card-val" id="ff-total">0원</div></div>
-        <div class="card"><div class="card-label">납부 완료</div><div class="card-val tc-g" id="ff-paid">0원</div></div>
-        <div class="card"><div class="card-label">미납</div><div class="card-val tc-y" id="ff-unpaid">0원</div></div>
-        <div class="card"><div class="card-label">체납</div><div class="card-val tc-r" id="ff-overdue">0원</div></div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
-        <span class="tc-m" style="font-size:12px;letter-spacing:.03em">거래처 현황 '기장' 구분 연동</span>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span id="fee-cnt" class="tc-m" style="font-size:12px"></span>
-          <button class="btn btn-ghost btn-sm" onclick="resetFeeF()">필터 초기화</button>
-        </div>
-      </div>
-      <!-- 숨김 필터 -->
-      <input type="search" id="ff-kw" style="display:none"/>
-      <select id="ff-cms-f" style="display:none"><option value="">전체</option><option value="Y">적용</option><option value="N">미적용</option></select>
-      <select id="ff-cms-status" style="display:none"><option value="">전체</option><option>납부</option><option>미납</option><option>체납</option></select>
-      <select id="ff-staff-f" style="display:none"><option value="">전체</option></select>
-      <!-- 필터 팝업 (기장료용) -->
-      <div id="ff-popup" style="display:none;position:fixed;z-index:500;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 12px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
-        <div id="ff-popup-inner"></div>
-        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
-          <button class="btn btn-ghost btn-sm" onclick="closeFeePopup()">닫기</button>
-          <button class="btn btn-primary btn-sm" onclick="applyFeePopup()">적용</button>
-        </div>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr id="fee-thead-row">
-              <th class="fee-th-f" data-ffid="ff-kw" data-sort="name" style="cursor:pointer;user-select:none">업체명 <span class="f-ind" id="ffi-kw"></span><span class="sort-ind" id="fsi-name"></span></th>
-              <th data-sort="fee" onclick="sortFee('fee')" style="cursor:pointer;user-select:none">기장료 <span class="sort-ind" id="fsi-fee"></span></th>
-              <th class="fee-th-f" data-ffid="ff-cms-f" data-sort="" style="cursor:pointer;user-select:none">CMS <span class="f-ind" id="ffi-cms-f"></span></th>
-              <th class="fee-th-f" data-ffid="ff-cms-status" data-sort="" style="cursor:pointer;user-select:none">납부상태 <span class="f-ind" id="ffi-cms-status"></span></th>
-              <th class="fee-th-f" data-ffid="ff-staff-f" data-sort="" style="cursor:pointer;user-select:none">담당직원 <span class="f-ind" id="ffi-staff-f"></span></th>
-              <th>액션</th>
-            </tr>
-          </thead>
-          <tbody id="fee-tbody"></tbody>
-        </table>
-      </div>
-    </div>
 
     <!-- ── NOTICES ── -->
     <div class="page" id="page-notices">
@@ -547,7 +492,7 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
         <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 담당 거래처 수</div><canvas id="ch-sc" height="160"></canvas></div>
       </div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>직원명</th><th>직급</th><th>담당 거래처</th><th>기여 기장료</th><th>잔여 연차</th><th>상태</th><th>액션</th></tr></thead>
+        <table><thead><tr><th>직원명</th><th>담당 거래처</th><th>기여 기장료</th><th>잔여 연차</th><th>상태</th><th>액션</th></tr></thead>
         <tbody id="st-tbody"></tbody></table>
       </div>
     </div>
@@ -649,6 +594,15 @@ async function init(){
       DB.staff=_real.map(r=>{const old=DB.staff.find(s=>s.id===r.id);return old?{...old,...r}:r;});
       await save();
     }
+    // 자동 부여된 더미 직급 제거
+    const _dummyRanks=['세무사','주임','사원'];
+    DB.staff.forEach(s=>{if(_dummyRanks.includes(s.rank)) delete s.rank;});
+    // 직원 계정 ↔ DB.staff 이름 기준 연동 (staff_id 없는 경우만)
+    (DB.users||[]).filter(u=>u.role==='직원'&&!u.staff_id).forEach(u=>{
+      const s=DB.staff.find(x=>x.name===u.name&&!(DB.users||[]).some(uu=>uu.staff_id===x.id));
+      if(s) u.staff_id=s.id;
+    });
+    await save();
   } else await seed();
   // 기존 세션 확인
   const sess=await S.get('intax-session');
@@ -738,9 +692,9 @@ async function seed(){
     {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
   ];
   DB.staff=[
-    {id:'s1',name:'강수민',rank:'세무사',leave:0,status:'재직',color:'#4f7eff'},
-    {id:'s2',name:'이지우',rank:'주임',leave:0,status:'재직',color:'#2ecfa8'},
-    {id:'s3',name:'김지민',rank:'사원',leave:0,status:'재직',color:'#ff7c4f'},
+    {id:'s1',name:'강수민',leave:0,status:'재직',color:'#4f7eff'},
+    {id:'s2',name:'이지우',leave:0,status:'재직',color:'#2ecfa8'},
+    {id:'s3',name:'김지민',leave:0,status:'재직',color:'#ff7c4f'},
   ];
   const secs=['제조업','도소매','서비스','음식업','건설업','IT','부동산','기타'];
   const names=['가나다 주식회사','나다라 상사','다라마 컨설팅','라마바 F&B','마바사 건설','바사아 솔루션','사아자 부동산','아자차 물산','자차카 서비스','차카타 상회','카타파 주식회사','타파하 개인','파하가 기업','하가나 코퍼레이션','가나다 무역'];
@@ -771,15 +725,12 @@ async function save(){await S.set('intax-v2',DB);}
 const PM={
   dashboard:{title:'대시보드',bread:'경영 현황 한눈에 보기',add:''},
   clients:{title:'거래처 현황',bread:'거래처 등록 및 조회',add:'+ 거래처 등록'},
-  fees:{title:'기장료 관리',bread:'CMS 및 납부 현황',add:''},
   notices:{title:'안내문 발송',bread:'신고별 안내문 작성',add:''},
-  staff:{title:'직원 현황',bread:'직원 등록 및 실적 관리',add:'+ 직원 등록'},
+  staff:{title:'직원 현황',bread:'직원 등록 및 실적 관리',add:''},
   settings:{title:'설정 / 권한',bread:'시스템 설정',add:'+ 계정 추가'},
 };
 
 function go(p){
-  // 직원 권한: fees 접근 차단
-  if(p==='fees'&&ME&&ME.role!=='대표'){go('dashboard');return;}
   CUR=p;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===p));
   document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id==='page-'+p));
@@ -798,7 +749,6 @@ function go(p){
 document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',()=>go(el.dataset.page)));
 document.getElementById('btn-add').addEventListener('click',()=>{
   if(CUR==='clients') openCM();
-  if(CUR==='staff')   openSM();
   if(CUR==='settings') openAM();
 });
 
@@ -806,7 +756,6 @@ document.getElementById('btn-add').addEventListener('click',()=>{
 function render(p){
   if(p==='dashboard') rDash();
   if(p==='clients')   rClients();
-  if(p==='fees')      rFees();
   if(p==='notices')   rNotices();
   if(p==='staff')     rStaff();
   if(p==='settings')  rSettings();
@@ -896,7 +845,6 @@ function rClients(){
   const ft=document.getElementById('f-type').value;
   const fs=document.getElementById('f-status').value;
   const fsec=fSec.value;
-  const fc=document.getElementById('f-cms').value;
   const fst=fSt.value;
   const fsize=(document.getElementById('f-size')||{}).value||'';
   const kw=document.getElementById('f-kw').value.trim().toLowerCase();
@@ -906,7 +854,6 @@ function rClients(){
   if(ft)     list=list.filter(c=>c.type===ft);
   if(fs)     list=list.filter(c=>c.status===fs);
   if(fsec)   list=list.filter(c=>c.sector===fsec);
-  if(fc)     list=list.filter(c=>c.cms===fc);
   if(fst)    list=list.filter(c=>c.staff_id===fst);
   if(fsize)  list=list.filter(c=>c.size===fsize);
   if(kw)     list=list.filter(c=>c.name.toLowerCase().includes(kw));
@@ -931,18 +878,17 @@ function rClients(){
       <td><span class="dot ${c.status==='정상'?'dg':'dr'}"></span>${c.status}</td>
       <td class="tc-m"></td>
       <td class="mono">${fmt(c.fee)}원</td>
-      <td><span class="tag ${c.cms==='Y'?'tag-green':'tag-gray'}">${c.cms==='Y'?'적용':'미적용'}</span></td>
       <td>${sn(c.staff_id)}</td>
       <td class="mono">${c.phone}</td>
       <td><div style="display:flex;gap:4px">
         <button class="btn btn-ghost btn-sm btn-edit-only" onclick="openCM('${c.id}')">수정</button>
         <button class="btn btn-danger btn-sm btn-edit-only" onclick="delC('${c.id}')">삭제</button>
       </div></td>
-    </tr>`).join(''):'<tr><td colspan="12" class="empty">조건에 맞는 거래처 없음</td></tr>';
+    </tr>`).join(''):'<tr><td colspan="11" class="empty">조건에 맞는 거래처 없음</td></tr>';
 
 }
 
-['f-div','f-type','f-status','f-sector','f-cms','f-staff','f-size'].forEach(id=>{
+['f-div','f-type','f-status','f-sector','f-staff','f-size'].forEach(id=>{
   const el=document.getElementById(id);
   if(el) el.addEventListener('change',()=>{if(CUR==='clients')rClients();});
 });
@@ -952,172 +898,12 @@ function rClients(){
 });
 
 function resetF(){
-  ['f-div','f-type','f-status','f-sector','f-cms','f-staff','f-size'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-div','f-type','f-status','f-sector','f-staff','f-size'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f-kw','f-bizno','f-phone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   updateFilterIndicators();
   rClients();
 }
 
-// ─── FEES ────────────────────────────────────────
-let FEE_SORT={key:'name',dir:1};
-
-function rFees(){
-  // 기본 데이터: 기장 + 정상
-  let kijang=DB.clients.filter(c=>(c.div||'기장')==='기장'&&c.status==='정상');
-
-  // KPI (필터 전 전체 기준)
-  const cms=kijang.filter(c=>c.cms==='Y');
-  const tot=kijang.reduce((s,c)=>s+c.fee,0);
-  const paid=cms.filter(c=>c.cms_status==='납부').reduce((s,c)=>s+c.fee,0);
-  const unp=cms.filter(c=>c.cms_status==='미납').reduce((s,c)=>s+c.fee,0);
-  const ovd=cms.filter(c=>c.cms_status==='체납').reduce((s,c)=>s+c.fee,0);
-  document.getElementById('ff-total').textContent=fmt(tot)+'원';
-  document.getElementById('ff-paid').textContent=fmt(paid)+'원';
-  document.getElementById('ff-unpaid').textContent=fmt(unp)+'원';
-  document.getElementById('ff-overdue').textContent=fmt(ovd)+'원';
-
-  // 담당자 select 동기화
-  const fstEl=document.getElementById('ff-staff-f');
-  const fstCur=fstEl?fstEl.value:'';
-  if(fstEl) fstEl.innerHTML='<option value="">전체</option>'+DB.staff.map(s=>`<option value="${s.id}"${fstCur===s.id?' selected':''}>${s.name}</option>`).join('');
-
-  // 필터 적용
-  const fkw=(document.getElementById('ff-kw')||{}).value?.trim().toLowerCase()||'';
-  const fcms=(document.getElementById('ff-cms-f')||{}).value||'';
-  const fcmss=(document.getElementById('ff-cms-status')||{}).value||'';
-  const fstf=fstEl?.value||'';
-  let list=[...kijang];
-  if(fkw)   list=list.filter(c=>c.name.toLowerCase().includes(fkw));
-  if(fcms)  list=list.filter(c=>c.cms===fcms);
-  if(fcmss) list=list.filter(c=>c.cms_status===fcmss);
-  if(fstf)  list=list.filter(c=>c.staff_id===fstf);
-
-  // 정렬
-  list.sort((a,b)=>{
-    if(FEE_SORT.key==='fee') return (a.fee-b.fee)*FEE_SORT.dir;
-    if(FEE_SORT.key==='name') return a.name.localeCompare(b.name,'ko')*FEE_SORT.dir;
-    return 0;
-  });
-
-  document.getElementById('fee-cnt').textContent=list.length+'건';
-  updateFeeIndicators();
-
-  const tb=document.getElementById('fee-tbody');
-  tb.innerHTML=list.length?list.map(c=>`
-    <tr>
-      <td class="fw5">${c.name}</td>
-      <td class="mono">${fmt(c.fee)}원</td>
-      <td><span class="tag ${c.cms==='Y'?'tag-green':'tag-gray'}">${c.cms==='Y'?'적용':'미적용'}</span></td>
-      <td>${c.cms==='Y'?`<span class="tag ${c.cms_status==='납부'?'tag-green':c.cms_status==='미납'?'tag-yellow':'tag-red'}">${c.cms_status}</span>`:'—'}</td>
-      <td>${sn(c.staff_id)}</td>
-      <td>${c.cms==='Y'?`<button class="btn btn-ghost btn-sm" onclick="cycleCMS('${c.id}')">상태 변경</button>`:'—'}</td>
-    </tr>`).join(''):'<tr><td colspan="6" class="empty">조건에 맞는 기장 거래처 없음</td></tr>';
-}
-
-const FF_META={
-  'ff-kw':        {label:'업체명',  type:'text'},
-  'ff-cms-f':     {label:'CMS',    type:'select', opts:['','Y','N'],            labels:['전체','적용','미적용']},
-  'ff-cms-status':{label:'납부상태',type:'select', opts:['','납부','미납','체납'], labels:['전체','납부','미납','체납']},
-  'ff-staff-f':   {label:'담당직원',type:'select-dynamic'},
-};
-
-let feePopupFid=null;
-
-document.addEventListener('click',e=>{
-  const th=e.target.closest('.fee-th-f');
-  if(th&&th.closest('#fee-thead-row')){openFeePopup(th,th.dataset.ffid);return;}
-  const sortTh=e.target.closest('[data-sort="fee"]');
-  if(sortTh){sortFee('fee');return;}
-  const popup=document.getElementById('ff-popup');
-  if(popup&&!popup.contains(e.target)) closeFeePopup();
-});
-
-function openFeePopup(th,fid){
-  if(feePopupFid===fid){closeFeePopup();return;}
-  feePopupFid=fid;
-  const meta=FF_META[fid];
-  if(!meta) return;
-  const popup=document.getElementById('ff-popup');
-  const inner=document.getElementById('ff-popup-inner');
-  const curVal=document.getElementById(fid)?.value||'';
-  let html=`<label>${meta.label} 필터</label>`;
-  if(meta.type==='text'){
-    html+=`<input type="search" id="ffp-input" placeholder="${meta.label} 검색…" value="${curVal}"/>`;
-  } else if(meta.type==='select'){
-    html+=`<select id="ffp-input">${meta.opts.map((o,i)=>`<option value="${o}"${o===curVal?' selected':''}>${meta.labels[i]}</option>`).join('')}</select>`;
-  } else if(meta.type==='select-dynamic'){
-    const srcEl=document.getElementById(fid);
-    html+=`<select id="ffp-input">${Array.from(srcEl.options).map(o=>`<option value="${o.value}"${o.value===curVal?' selected':''}>${o.text}</option>`).join('')}</select>`;
-  }
-  inner.innerHTML=html;
-  const rect=th.getBoundingClientRect();
-  popup.style.top=(rect.bottom+4)+'px';
-  popup.style.left=Math.min(rect.left,window.innerWidth-220)+'px';
-  popup.style.display='block';
-  setTimeout(()=>{const inp=document.getElementById('ffp-input');if(inp)inp.focus();},50);
-  const inp=document.getElementById('ffp-input');
-  if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter')applyFeePopup();});
-}
-
-function applyFeePopup(){
-  if(!feePopupFid) return;
-  const inp=document.getElementById('ffp-input');
-  if(!inp) return;
-  const hidden=document.getElementById(feePopupFid);
-  if(hidden) hidden.value=inp.value;
-  closeFeePopup();
-  rFees();
-}
-
-function closeFeePopup(){
-  const p=document.getElementById('ff-popup');
-  if(p) p.style.display='none';
-  feePopupFid=null;
-}
-
-function sortFee(key){
-  if(FEE_SORT.key===key){
-    if(FEE_SORT.dir===1)       FEE_SORT.dir=-1;   // 오름차순 → 내림차순
-    else{FEE_SORT.key='name';FEE_SORT.dir=1;}      // 내림차순 → 초기화(가나다순)
-  } else {
-    FEE_SORT.key=key; FEE_SORT.dir=1;              // 새 컬럼 → 오름차순
-  }
-  rFees();
-}
-
-function updateFeeIndicators(){
-  Object.keys(FF_META).forEach(fid=>{
-    const val=document.getElementById(fid)?.value||'';
-    const indId='ffi-'+fid.replace('ff-','');
-    const ind=document.getElementById(indId);
-    const th=document.querySelector(`[data-ffid="${fid}"]`);
-    if(ind){ind.textContent=val?'▲':'⬍';ind.className=val?'f-ind on':'f-ind';}
-    if(th) th.classList.toggle('f-active',!!val);
-  });
-  // 정렬 표시
-  ['name','fee'].forEach(k=>{
-    const el=document.getElementById('fsi-'+k);
-    if(!el) return;
-    if(FEE_SORT.key===k) el.textContent=FEE_SORT.dir===1?' ↑':' ↓';
-    else el.textContent=' ↕';
-  });
-  // 기장료 헤더 활성 표시
-  const feeThEl=document.querySelector('[data-sort="fee"]');
-  if(feeThEl) feeThEl.classList.toggle('sort-active', FEE_SORT.key==='fee');
-}
-
-function resetFeeF(){
-  ['ff-kw','ff-cms-f','ff-cms-status','ff-staff-f'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  FEE_SORT={key:'name',dir:1};
-  rFees();
-}
-
-async function cycleCMS(id){
-  const c=DB.clients.find(x=>x.id===id); if(!c) return;
-  const cy=['납부','미납','체납'];
-  c.cms_status=cy[(cy.indexOf(c.cms_status)+1)%3];
-  await save(); rFees();
-}
 
 // ─── NOTICES ─────────────────────────────────────
 function getNoticeTargets(){
@@ -1229,7 +1015,7 @@ function rStaff(){
     return `<div class="staff-card">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         <div style="width:40px;height:40px;border-radius:50%;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">${s.name[0]}</div>
-        <div><div class="fw5">${s.name}</div><div class="tc-m" style="font-size:12.5px">${s.rank}</div></div>
+        <div class="fw5">${s.name}</div>
         <span class="tag ${s.status==='재직'?'tag-green':'tag-red'}" style="margin-left:auto">${s.status}</span>
       </div>
       <div class="g2" style="gap:8px">
@@ -1243,7 +1029,10 @@ function rStaff(){
       </div>
     </div>`;
   });
-  rows.push(`<div class="staff-card" style="display:flex;align-items:center;justify-content:center;border-style:dashed;cursor:pointer;min-height:160px" onclick="openSM()"><span class="tc-m">+ 직원 추가</span></div>`);
+  rows.push(`<div class="staff-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:dashed;cursor:pointer;min-height:160px;gap:6px;text-align:center" onclick="go('settings')">
+    <span class="tc-m" style="font-size:13.5px">+ 직원 추가</span>
+    <span style="font-size:11.5px;color:var(--dim)">설정 / 권한에서<br>계정을 등록하세요</span>
+  </div>`);
   cards.innerHTML=rows.join('');
 
   const names=DB.staff.map(s=>s.name);
@@ -1258,7 +1047,7 @@ function rStaff(){
     const cnt=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').length;
     const fee=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').reduce((a,c)=>a+c.fee,0);
     return `<tr>
-      <td class="fw5">${s.name}</td><td>${s.rank}</td><td>${cnt}건</td>
+      <td class="fw5">${s.name}</td><td>${cnt}건</td>
       <td class="mono">${fmt(fee)}원</td><td>${s.leave}일</td>
       <td><span class="tag ${s.status==='재직'?'tag-green':'tag-red'}">${s.status}</span></td>
       <td><div style="display:flex;gap:4px">
@@ -1266,7 +1055,7 @@ function rStaff(){
         <button class="btn btn-danger btn-sm" onclick="delS('${s.id}')">삭제</button>
       </div></td>
     </tr>`;
-  }).join('')||'<tr><td colspan="7" class="empty">직원 없음</td></tr>';
+  }).join('')||'<tr><td colspan="6" class="empty">직원 없음</td></tr>';
 }
 
 // ─── SETTINGS ────────────────────────────────────
@@ -1294,6 +1083,8 @@ function rSettings(){
   tb.innerHTML=(DB.users||[]).map(u=>{
     const isMe=ME&&u.id===ME.id;
     const isBossAcc=u.role==='대표';
+    const linkedStaff=u.staff_id?DB.staff.find(x=>x.id===u.staff_id):null;
+    const staffStatusBadge=linkedStaff?`<span class="tag ${linkedStaff.status==='재직'?'tag-blue':'tag-red'}" style="margin-left:5px">${linkedStaff.status}</span>`:'';
     return `<tr>
       <td>
         <div style="display:flex;align-items:center;gap:7px">
@@ -1303,7 +1094,7 @@ function rSettings(){
       </td>
       <td><span class="tag ${isBossAcc?'tag-blue':'tag-gray'}">${u.role}</span></td>
       <td class="mono tc-m" style="font-size:13px">${u.loginId||'—'}</td>
-      <td>${isMe?'<span class="tag tag-green">접속 중</span>':'<span class="tag tag-gray">오프라인</span>'}</td>
+      <td>${isMe?'<span class="tag tag-green">접속 중</span>':'<span class="tag tag-gray">오프라인</span>'}${!isBossAcc?staffStatusBadge:''}</td>
       <td>${isBoss?`<div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">수정</button>
           <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비밀번호 변경</button>
@@ -1380,16 +1171,28 @@ async function delC(id){
 function openSM(id){
   EID=id||null;
   const s=id?DB.staff.find(x=>x.id===id):{};
+  const linkedUser=(DB.users||[]).find(u=>u.staff_id===id);
   const cols=['#4f7eff','#2ecfa8','#ff7c4f','#ffb830','#f05c5c','#c47eff'];
   document.getElementById('m-title').textContent=id?'직원 수정':'직원 등록';
   document.getElementById('m-body').innerHTML=`
     <div class="form-row">
-      <div class="form-group"><div class="form-label">이름 *</div><input class="form-input" id="m-sn" value="${s.name||''}"/></div>
-      <div class="form-group"><div class="form-label">직급</div><input class="form-input" id="m-rk" value="${s.rank||''}"/></div>
+      <div class="form-group">
+        <div class="form-label">이름</div>
+        <input class="form-input" id="m-sn" value="${s.name||''}" ${linkedUser?'readonly style="opacity:.55;cursor:not-allowed"':''}/>
+        ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">이름은 설정 / 권한에서 변경하세요</div>`:''}
+      </div>
+      <div class="form-group">
+        <div class="form-label">잔여 연차 (일)</div>
+        <input class="form-input" type="number" id="m-lv" value="${s.leave??15}"/>
+      </div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><div class="form-label">잔여 연차 (일)</div><input class="form-input" type="number" id="m-lv" value="${s.leave??15}"/></div>
-      <div class="form-group"><div class="form-label">재직 상태</div><select class="form-select" id="m-ss"><option value="재직" ${s.status!=='퇴사'?'selected':''}>재직</option><option value="퇴사" ${s.status==='퇴사'?'selected':''}>퇴사</option></select></div>
+    <div class="form-group">
+      <div class="form-label">재직 상태</div>
+      <select class="form-select" id="m-ss">
+        <option value="재직" ${s.status!=='퇴사'?'selected':''}>재직</option>
+        <option value="퇴사" ${s.status==='퇴사'?'selected':''}>퇴사</option>
+      </select>
+      ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">설정 / 권한 계정 수정에서도 변경 가능합니다</div>`:''}
     </div>
     <div class="form-group"><div class="form-label">아바타 색상</div>
       <div style="display:flex;gap:8px;margin-top:4px">${cols.map(col=>`<div onclick="pickCol(this,'${col}')" style="width:26px;height:26px;border-radius:50%;background:${col};cursor:pointer;border:2px solid ${(s.color||cols[0])===col?'#fff':'transparent'};transition:border .15s" data-col="${col}"></div>`).join('')}</div>
@@ -1406,7 +1209,7 @@ function pickCol(el,col){
 
 async function saveS(){
   const name=gv('m-sn'); if(!name){alert('이름을 입력해 주세요.');return;}
-  const obj={id:EID||('s'+Date.now()),name,rank:gv('m-rk'),leave:Number(gv('m-lv'))||0,status:gv('m-ss'),color:document.getElementById('m-col').value};
+  const obj={id:EID||('s'+Date.now()),name,leave:Number(gv('m-lv'))||0,status:gv('m-ss'),color:document.getElementById('m-col').value};
   if(EID){const i=DB.staff.findIndex(x=>x.id===EID);DB.staff[i]=obj;}else DB.staff.push(obj);
   await save(); closeModal(); render('staff');
 }
@@ -1418,16 +1221,34 @@ async function delS(id){
   await save(); render('staff');
 }
 
+// ─── STAFF ↔ USER 동기화 ────────────────────────
+function syncStaffFromUser(u){
+  const COLS=['#4f7eff','#2ecfa8','#ff7c4f','#ffb830','#f05c5c','#c47eff'];
+  if(u.staff_id){
+    const s=DB.staff.find(x=>x.id===u.staff_id);
+    if(s) s.name=u.name;
+  } else {
+    const used=DB.staff.map(s=>s.color);
+    const col=COLS.find(c=>!used.includes(c))||COLS[DB.staff.length%COLS.length];
+    const ns={id:'s'+Date.now(),name:u.name,rank:'',leave:15,status:'재직',color:col};
+    DB.staff.push(ns);
+    u.staff_id=ns.id;
+  }
+}
+
 // ─── MODAL: ACCOUNT ──────────────────────────────
 function openAM(id){
   EID=id||null;
   const u=id?(DB.users||[]).find(x=>x.id===id):{};
+  const linkedStaff=u.staff_id?DB.staff.find(x=>x.id===u.staff_id):null;
+  const staffStatus=linkedStaff?.status||'재직';
+  const isStaff=(u.role||'직원')!=='대표';
   document.getElementById('m-title').textContent=id?'계정 수정':'계정 추가';
   document.getElementById('m-body').innerHTML=`
     <div class="form-row">
       <div class="form-group"><div class="form-label">이름 *</div><input class="form-input" id="m-un" value="${u.name||''}"/></div>
       <div class="form-group"><div class="form-label">권한</div>
-        <select class="form-select" id="m-ur">
+        <select class="form-select" id="m-ur" onchange="toggleAccStatusField(this.value)">
           <option value="대표" ${u.role==='대표'?'selected':''}>대표</option>
           <option value="직원" ${u.role!=='대표'?'selected':''}>직원</option>
         </select>
@@ -1436,10 +1257,22 @@ function openAM(id){
     <div class="form-row">
       <div class="form-group"><div class="form-label">로그인 아이디 *</div><input class="form-input" id="m-uid" value="${u.loginId||''}"/></div>
       <div class="form-group"><div class="form-label">비밀번호${id?' (변경 시만 입력)':' *'}</div><input class="form-input" type="password" id="m-upw" placeholder="${id?'변경하지 않으면 비워두세요':'필수 입력'}"/></div>
+    </div>
+    <div class="form-group" id="acc-status-row" style="${isStaff?'':'display:none'}">
+      <div class="form-label">재직 상태</div>
+      <select class="form-select" id="m-ust">
+        <option value="재직" ${staffStatus==='재직'?'selected':''}>재직</option>
+        <option value="퇴사" ${staffStatus==='퇴사'?'selected':''}>퇴사</option>
+      </select>
     </div>`;
   document.getElementById('m-confirm').textContent='저장';
   document.getElementById('m-confirm').onclick=saveA;
   openModal();
+}
+
+function toggleAccStatusField(role){
+  const row=document.getElementById('acc-status-row');
+  if(row) row.style.display=role==='직원'?'':'none';
 }
 
 async function saveA(){
@@ -1455,6 +1288,20 @@ async function saveA(){
   const role=gv('m-ur');
   const access=role==='대표'?'전체':'거래처, 안내문, 직원';
   const obj={id:EID||('u'+Date.now()),name,role,loginId,pw,access};
+  // 기존 staff_id 보존
+  if(existing?.staff_id) obj.staff_id=existing.staff_id;
+  // DB.staff 연동
+  if(role==='직원'){
+    syncStaffFromUser(obj);
+    // 재직/퇴사 상태 동기화
+    const staffEntry=DB.staff.find(x=>x.id===obj.staff_id);
+    if(staffEntry){const st=gv('m-ust');if(st) staffEntry.status=st;}
+  } else if(existing?.role==='직원'&&existing.staff_id){
+    // 직원 → 대표 변경 시: 연결된 staff 퇴사 처리
+    const s=DB.staff.find(x=>x.id===existing.staff_id);
+    if(s) s.status='퇴사';
+    delete obj.staff_id;
+  }
   if(EID){const i=DB.users.findIndex(x=>x.id===EID);DB.users[i]=obj;if(ME&&ME.id===EID)ME=obj;}
   else DB.users.push(obj);
   await save(); closeModal(); rSettings();
@@ -1493,7 +1340,12 @@ async function savePwChange(){
 
 async function delA(id){
   const u=(DB.users||[]).find(x=>x.id===id);if(!u)return;
-  if(!confirm(`'${u.name}' 계정을 삭제할까요?\n이 작업은 되돌릴 수 없습니다.`))return;
+  if(!confirm(`'${u.name}' 계정을 삭제할까요?\n직원 현황에서 퇴사 처리됩니다.`))return;
+  // 연결된 staff 퇴사 처리 (거래처 담당자 기록 보존)
+  if(u.role==='직원'&&u.staff_id){
+    const s=DB.staff.find(x=>x.id===u.staff_id);
+    if(s) s.status='퇴사';
+  }
   DB.users=DB.users.filter(x=>x.id!==id);
   await save();rSettings();
 }
@@ -1638,7 +1490,6 @@ const F_META = {
   'f-status': {label:'상태',   type:'select', opts:['','정상','폐업'],          labels:['전체','정상','폐업']},
   'f-sector': {label:'업종',   type:'select-dynamic'},
   'f-size':   {label:'규모',   type:'select', opts:['','중소기업','소상공인','개인사업자'], labels:['전체','중소기업','소상공인','개인사업자']},
-  'f-cms':    {label:'CMS',    type:'select', opts:['','Y','N'],                labels:['전체','적용','미적용']},
   'f-staff':  {label:'담당직원', type:'select-dynamic'},
   'f-phone':  {label:'연락처', type:'text'},
 };
