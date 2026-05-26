@@ -152,7 +152,7 @@ if (-not $SkipBrowser) {
     # 기존 CDP 포트 사용 중인지 확인
     $portInUse = $false
     try {
-        $resp = Invoke-WebRequest -Uri "http://localhost:$DebugPort/json" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+        $resp = Invoke-WebRequest -Uri "http://localhost:$DebugPort/json" -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
         if ($resp.StatusCode -eq 200) { $portInUse = $true }
     } catch {}
 
@@ -175,19 +175,19 @@ if (-not $SkipBrowser) {
         Log "Chrome 원격 디버깅 시작 (포트: $DebugPort)..."
         $chromeArgs = "--remote-debugging-port=$DebugPort --no-first-run --no-default-browser-check --user-data-dir=`"$env:TEMP\intax-chrome-cdp`""
         Start-Process -FilePath $ChromePath -ArgumentList $chromeArgs
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 5
 
-        # CDP 포트 대기
+        # CDP 포트 대기 (최대 60초, 10초 타임아웃으로 체크)
         $waited = 0
-        while ($waited -lt 15) {
+        while ($waited -lt 60) {
             try {
-                $r = Invoke-WebRequest -Uri "http://localhost:$DebugPort/json" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+                $r = Invoke-WebRequest -Uri "http://localhost:$DebugPort/json" -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
                 if ($r.StatusCode -eq 200) { break }
             } catch {}
-            Start-Sleep -Seconds 1
-            $waited++
+            Start-Sleep -Seconds 2
+            $waited += 2
         }
-        if ($waited -ge 15) {
+        if ($waited -ge 60) {
             LogErr "Chrome CDP 포트($DebugPort) 연결 실패. Chrome이 시작되지 않았습니다."
             exit 1
         }
@@ -322,7 +322,15 @@ if (-not $SkipBrowser) {
     # 홈택스 로그인 화면에서 공동인증서 로그인 탭/버튼 클릭
     $clickCertTab = @"
 (function(){
-  // 공동인증서 로그인 탭 (홈택스 UI 기준)
+  // iframe 포함 전체 문서 탐색 헬퍼
+  function allDocs() {
+    var docs = [document];
+    var frames = document.querySelectorAll('iframe');
+    for(var i=0; i<frames.length; i++){
+      try{ docs.push(frames[i].contentDocument || frames[i].contentWindow.document); }catch(e){}
+    }
+    return docs;
+  }
   var selectors = [
     '#mf_txppWframe_login_tab7',
     '.w2troup.privLofin',
@@ -335,15 +343,18 @@ if (-not $SkipBrowser) {
     '[title="공동인증서"]',
     '[alt="공동인증서"]'
   ];
-  for(var i=0; i<selectors.length; i++){
-    var el = document.querySelector(selectors[i]);
-    if(el){ el.click(); return 'clicked:'+selectors[i]; }
-  }
-  // 텍스트로 탐색
-  var links = document.querySelectorAll('a, button, li');
-  for(var j=0; j<links.length; j++){
-    if(links[j].textContent.trim().indexOf('공동인증서') >= 0){
-      links[j].click(); return 'clicked-text:'+links[j].textContent.trim();
+  var docs = allDocs();
+  for(var d=0; d<docs.length; d++){
+    for(var i=0; i<selectors.length; i++){
+      var el = docs[d].querySelector(selectors[i]);
+      if(el){ el.click(); return 'clicked:'+selectors[i]+'(doc'+d+')'; }
+    }
+    // 텍스트로 탐색
+    var links = docs[d].querySelectorAll('a, button, li');
+    for(var j=0; j<links.length; j++){
+      if(links[j].textContent.trim().indexOf('공동인증서') >= 0){
+        links[j].click(); return 'clicked-text(doc'+d+'):'+links[j].textContent.trim().substring(0,30);
+      }
     }
   }
   return 'not-found';
@@ -362,19 +373,22 @@ if (-not $SkipBrowser) {
 
     $selectCertJs = @"
 (function(){
-  var certList = document.querySelectorAll('.cert-list li, .certList li, [id*="certList"] li, #certList li');
-  for(var i=0; i<certList.length; i++){
-    if(certList[i].textContent.indexOf('인택스') >= 0 || certList[i].textContent.indexOf('97769') >= 0){
-      certList[i].click();
-      return 'cert-selected:'+certList[i].textContent.trim().substring(0,40);
+  function allDocs() {
+    var docs = [document];
+    var frames = document.querySelectorAll('iframe');
+    for(var i=0; i<frames.length; i++){
+      try{ docs.push(frames[i].contentDocument || frames[i].contentWindow.document); }catch(e){}
     }
+    return docs;
   }
-  // 인증서 목록이 다른 구조일 경우
-  var rows = document.querySelectorAll('tr, .cert-row, .certItem');
-  for(var j=0; j<rows.length; j++){
-    if(rows[j].textContent.indexOf('인택스') >= 0 || rows[j].textContent.indexOf('97769') >= 0){
-      rows[j].click();
-      return 'row-selected:'+rows[j].textContent.trim().substring(0,40);
+  var docs = allDocs();
+  for(var d=0; d<docs.length; d++){
+    var certList = docs[d].querySelectorAll('.cert-list li, .certList li, [id*="certList"] li, #certList li, tr, .cert-row, .certItem');
+    for(var i=0; i<certList.length; i++){
+      if(certList[i].textContent.indexOf('인택스') >= 0 || certList[i].textContent.indexOf('97769') >= 0){
+        certList[i].click();
+        return 'cert-selected(doc'+d+'):'+certList[i].textContent.trim().substring(0,40);
+      }
     }
   }
   return 'cert-not-found';
@@ -387,28 +401,36 @@ if (-not $SkipBrowser) {
 
     if ($certSelResp.result.result.value -eq "cert-not-found") {
         LogWarn "인택스 인증서를 자동으로 찾지 못했습니다."
-        LogWarn "인증서 목록이 표시되면 수동으로 선택 후 엔터를 눌러주세요."
-        Read-Host "수동 선택 완료 후 엔터"
+        LogWarn "자동 선택 실패 — 홈택스 인증서 창에서 인택스(97769) 인증서를 수동으로 선택 후 스크립트를 재실행하세요."
+        LogWarn "재실행 시 -SkipBrowser 없이 실행하면 로그인까지 자동으로 진행됩니다."
+        exit 1
     }
 
     # ── PIN 입력 ─────────────────────────────────────────
     # 보안: PIN 값은 JS 문자열로 직접 삽입 (CDP 채널은 로컬 전용)
     $pinJs = @"
 (function(pin){
-  var fields = [
-    document.getElementById('certPw'),
-    document.getElementById('certPassword'),
-    document.getElementById('pin'),
-    document.querySelector('input[type="password"][id*="pin"]'),
-    document.querySelector('input[type="password"][id*="cert"]'),
-    document.querySelector('input[type="password"]')
-  ];
-  for(var i=0; i<fields.length; i++){
-    if(fields[i]){
-      fields[i].value = pin;
-      fields[i].dispatchEvent(new Event('input', {bubbles:true}));
-      fields[i].dispatchEvent(new Event('change', {bubbles:true}));
-      return 'pin-entered:'+fields[i].id;
+  function allDocs() {
+    var docs = [document];
+    var frames = document.querySelectorAll('iframe');
+    for(var i=0; i<frames.length; i++){
+      try{ docs.push(frames[i].contentDocument || frames[i].contentWindow.document); }catch(e){}
+    }
+    return docs;
+  }
+  var pwSelectors = ['#certPw','#certPassword','#pin',
+    'input[type="password"][id*="pin"]','input[type="password"][id*="cert"]',
+    'input[type="password"]'];
+  var docs = allDocs();
+  for(var d=0; d<docs.length; d++){
+    for(var s=0; s<pwSelectors.length; s++){
+      var f = docs[d].querySelector(pwSelectors[s]);
+      if(f){
+        f.value = pin;
+        f.dispatchEvent(new Event('input', {bubbles:true}));
+        f.dispatchEvent(new Event('change', {bubbles:true}));
+        return 'pin-entered(doc'+d+'):'+f.id;
+      }
     }
   }
   return 'pin-field-not-found';
@@ -432,24 +454,28 @@ if (-not $SkipBrowser) {
     # ── 확인(로그인) 버튼 클릭 ──────────────────────────
     $loginClickJs = @"
 (function(){
-  var btns = [
-    document.getElementById('logBtn'),
-    document.querySelector('button[id*="login"]'),
-    document.querySelector('a[id*="login"]'),
-    document.querySelector('.login-btn'),
-    document.querySelector('[title="확인"]'),
-    document.querySelector('input[type="submit"]')
-  ];
-  for(var i=0; i<btns.length; i++){
-    if(btns[i]){ btns[i].click(); return 'login-clicked:'+btns[i].id; }
+  function allDocs() {
+    var docs = [document];
+    var frames = document.querySelectorAll('iframe');
+    for(var i=0; i<frames.length; i++){
+      try{ docs.push(frames[i].contentDocument || frames[i].contentWindow.document); }catch(e){}
+    }
+    return docs;
   }
-  // 텍스트 "확인" 또는 "로그인" 버튼
-  var all = document.querySelectorAll('button, a, input[type="button"]');
-  for(var j=0; j<all.length; j++){
-    var t = all[j].textContent.trim();
-    if(t==='확인' || t==='로그인'){
-      all[j].click();
-      return 'text-clicked:'+t;
+  var btnSelectors = ['#logBtn','button[id*="login"]','a[id*="login"]',
+    '.login-btn','[title="확인"]','input[type="submit"]'];
+  var docs = allDocs();
+  for(var d=0; d<docs.length; d++){
+    for(var s=0; s<btnSelectors.length; s++){
+      var b = docs[d].querySelector(btnSelectors[s]);
+      if(b){ b.click(); return 'login-clicked(doc'+d+'):'+b.id; }
+    }
+    var all = docs[d].querySelectorAll('button, a, input[type="button"]');
+    for(var j=0; j<all.length; j++){
+      var t = all[j].textContent.trim();
+      if(t==='확인' || t==='로그인'){
+        all[j].click(); return 'text-clicked(doc'+d+'):'+t;
+      }
     }
   }
   return 'login-btn-not-found';
