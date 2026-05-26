@@ -586,16 +586,16 @@ const CI={};
 const REMOTE_BACKUP_URL='https://raw.githubusercontent.com/iukimblock-collab/intax-dashboard/main/intax_backup.json';
 
 async function tryRemoteSync(){
-  // 로컬 데이터가 충분히 있으면 원격 동기화 건너뜀
-  const db=await S.get('intax-v2');
-  if(db&&db.clients&&db.clients.length>0) return;
   try{
     const resp=await fetch(REMOTE_BACKUP_URL,{cache:'no-store'});
     if(!resp.ok) return;
     const backup=await resp.json();
     if(!backup.clients||!Array.isArray(backup.clients)||backup.clients.length===0) return;
-    // meta 정보 보존하여 DB에 병합
-    if(!DB.clients||DB.clients.length===0){
+    // 로컬 vs 원격 동기화 시각 비교 → 원격이 더 최신이거나 로컬이 비어있으면 덮어씀
+    const localSynced=DB.meta&&DB.meta.hometax_synced_at||DB.htxLastSync||'';
+    const remoteSynced=backup.meta&&backup.meta.hometax_synced_at||backup.htxLastSync||'';
+    const localEmpty=!DB.clients||DB.clients.length===0;
+    if(localEmpty||remoteSynced>localSynced){
       DB.clients=backup.clients;
       DB.staff=backup.staff||DB.staff;
       DB.notices=backup.notices||DB.notices;
@@ -604,7 +604,7 @@ async function tryRemoteSync(){
       if(backup.htxLastSync) DB.htxLastSync=backup.htxLastSync;
       else if(backup.meta&&backup.meta.hometax_synced_at) DB.htxLastSync=backup.meta.hometax_synced_at;
       await save();
-      console.log('[INTAX] 원격 데이터 로드 완료. 거래처:',backup.clients.length,'건, 동기화:',backup.meta&&backup.meta.hometax_synced_at);
+      console.log('[INTAX] 원격 데이터 동기화 완료. 거래처:',backup.clients.length,'건, 동기화:',remoteSynced);
     }
   }catch(e){
     console.warn('[INTAX] 원격 동기화 실패 (오프라인?):', e.message||e);
