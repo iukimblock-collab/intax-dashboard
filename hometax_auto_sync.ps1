@@ -85,33 +85,54 @@ try {
 # ─── STEP 1: NPKI 인증서 탐색 ────────────────────────
 LogStep "1. NPKI 공동인증서 탐색"
 
-$NpkiRoot = "C:\NPKI"
+$NpkiRoot  = "C:\NPKI"
 $IntaxCert = $null
+$_now      = Get-Date
 
 if (Test-Path $NpkiRoot) {
-    # "인택스" 또는 "INTAX" 포함 디렉토리 탐색
     $certDirs = Get-ChildItem -Path $NpkiRoot -Recurse -Directory -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -match "인택스|INTAX|97769" }
 
+    # 파일 존재 + 유효기간 검사 후 만료일 가장 늦은 인증서 선택
+    $validCerts = @()
     foreach ($dir in $certDirs) {
         $signCert = Join-Path $dir.FullName "signCert.der"
         $signKey  = Join-Path $dir.FullName "signPri.key"
-        if ((Test-Path $signCert) -and (Test-Path $signKey)) {
-            $IntaxCert = @{
-                Dir      = $dir.FullName
-                CertFile = $signCert
-                KeyFile  = $signKey
-                Name     = $dir.Name
+        if (-not ((Test-Path $signCert) -and (Test-Path $signKey))) { continue }
+        try {
+            $x509 = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+            $x509.Import([System.IO.File]::ReadAllBytes($signCert))
+            if ($x509.NotAfter -gt $_now) {
+                $validCerts += [PSCustomObject]@{
+                    Dir      = $dir.FullName
+                    CertFile = $signCert
+                    KeyFile  = $signKey
+                    Name     = $dir.Name
+                    NotAfter = $x509.NotAfter
+                }
             }
-            LogOK "인택스 인증서 발견: $($dir.Name)"
-            break
+            $x509.Dispose()
+        } catch { }
+    }
+
+    if ($validCerts.Count -gt 0) {
+        $best = $validCerts | Sort-Object NotAfter -Descending | Select-Object -First 1
+        $IntaxCert = @{
+            Dir      = $best.Dir
+            CertFile = $best.CertFile
+            KeyFile  = $best.KeyFile
+            Name     = $best.Name
         }
+        $daysLeft = ($best.NotAfter - $_now).Days
+        LogOK "인택스 인증서 발견: $($best.Name)"
+        LogOK "  경로: $($best.Dir)"
+        LogOK "  만료: $($best.NotAfter.ToString('yyyy-MM-dd')) (${daysLeft}일 남음)"
     }
 }
 
 if (-not $IntaxCert) {
-    LogWarn "C:\NPKI에서 인택스 인증서를 찾지 못했습니다."
-    LogWarn "인증서 디렉토리명에 '인택스' 또는 '97769'가 포함되어야 합니다."
+    LogWarn "C:\NPKI에서 유효한 인택스 인증서를 찾지 못했습니다."
+    LogWarn "인증서가 만료되었거나 경로에 '인택스' 또는 '97769'가 포함되지 않을 수 있습니다."
     if (-not $SkipBrowser) {
         Log "브라우저 자동화 시 인증서를 수동으로 선택해야 할 수 있습니다." Yellow
     }

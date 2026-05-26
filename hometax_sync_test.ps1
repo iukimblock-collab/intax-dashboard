@@ -390,58 +390,50 @@ if (Should-Run "T5") {
         Write-Skip "T5" "NPKI 디렉토리 없음 (C:\NPKI) — 공동인증서 미설치"
     } else {
         try {
-            # INTAX 관련 디렉토리 탐색 (인택스, INTAX, 김인욱 등)
-            $certDirs = Get-ChildItem -Path $npkiRoot -Recurse -Directory -ErrorAction SilentlyContinue |
-                        Where-Object { $_.Name -match "INTAX|인택스|김인욱|세무|회계" }
+            # 인택스/97769 포함 디렉토리 탐색 → 유효기간 검사 → 만료일 가장 늦은 것 선택
+            $t5Now      = Get-Date
+            $t5AllDirs  = Get-ChildItem -Path $npkiRoot -Recurse -Directory -ErrorAction SilentlyContinue |
+                          Where-Object { $_.Name -match "인택스|INTAX|97769" }
+            $t5Valid    = @()
 
-            # 이름 매칭 없으면 가장 최근 수정된 디렉토리로 폴백
-            if ($null -eq $certDirs -or @($certDirs).Count -eq 0) {
-                $certDirs = Get-ChildItem -Path $npkiRoot -Recurse -Directory -ErrorAction SilentlyContinue |
-                            Where-Object { (Test-Path (Join-Path $_.FullName "signCert.der")) } |
-                            Sort-Object LastWriteTime -Descending |
-                            Select-Object -First 3
+            foreach ($dir in @($t5AllDirs)) {
+                $derPath = Join-Path $dir.FullName "signCert.der"
+                $keyPath = Join-Path $dir.FullName "signPri.key"
+                if (-not ((Test-Path $derPath) -and (Test-Path $keyPath))) { continue }
+                try {
+                    $x509 = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+                    $x509.Import([System.IO.File]::ReadAllBytes($derPath))
+                    $t5Valid += [PSCustomObject]@{
+                        Dir      = $dir.FullName
+                        DerPath  = $derPath
+                        KeyPath  = $keyPath
+                        NotAfter = $x509.NotAfter
+                        DaysLeft = ($x509.NotAfter - $t5Now).Days
+                    }
+                    $x509.Dispose()
+                } catch { }
             }
 
-            if ($null -eq $certDirs -or @($certDirs).Count -eq 0) {
-                Write-Fail "T5" "NPKI 인증서 디렉토리를 찾을 수 없음 (signCert.der 보유 폴더 없음)"
+            if ($t5Valid.Count -eq 0) {
+                Write-Fail "T5" "NPKI에서 인택스/97769 인증서를 찾을 수 없음 (signCert.der + signPri.key 쌍 없음)"
             } else {
+                # 만료일 가장 늦은 인증서 선택
+                $best5    = $t5Valid | Sort-Object NotAfter -Descending | Select-Object -First 1
+                $foundDir = $best5.Dir
+                $derPath  = $best5.DerPath
+                $keyPath  = $best5.KeyPath
+                $daysLeft = $best5.DaysLeft
+                $notAfter = $best5.NotAfter
                 $certErrors   = @()
                 $certWarnings = @()
-                $foundDir     = $null
-
-                foreach ($dir in @($certDirs)) {
-                    $derPath = Join-Path $dir.FullName "signCert.der"
-                    $keyPath = Join-Path $dir.FullName "signPri.key"
-
-                    if ((Test-Path $derPath) -and (Test-Path $keyPath)) {
-                        $foundDir = $dir.FullName
-                        break
-                    }
-                }
-
-                if ($null -eq $foundDir) {
-                    Write-Fail "T5" "signCert.der + signPri.key 쌍을 갖춘 인증서 디렉토리 없음"
-                } else {
-                    $derPath = Join-Path $foundDir "signCert.der"
-                    $keyPath = Join-Path $foundDir "signPri.key"
 
                     # 인증서 유효기간 확인
                     try {
-                        $certBytes = [System.IO.File]::ReadAllBytes($derPath)
-                        $x509 = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-                        $x509.Import($certBytes)
-
-                        $notAfter = $x509.NotAfter
-                        $now      = Get-Date
-                        $daysLeft = ($notAfter - $now).Days
-
                         if ($daysLeft -lt 0) {
                             $certErrors += "인증서 만료됨 ($($notAfter.ToString('yyyy-MM-dd')))"
                         } elseif ($daysLeft -lt 30) {
                             $certWarnings += "인증서 만료 임박 (${daysLeft}일 남음, 만료: $($notAfter.ToString('yyyy-MM-dd')))"
                         }
-
-                        $x509.Dispose()
 
                         if ($certErrors.Count -gt 0) {
                             Write-Fail "T5" "NPKI 인증서 이상 — $($certErrors -join ' | ')"
@@ -452,10 +444,9 @@ if (Should-Run "T5") {
                         }
 
                     } catch {
-                        # .der 파싱 실패 시 파일 존재만 확인
+                        # 파싱 실패 시 파일 존재만 확인
                         Write-Pass "T5" "NPKI 인증서 파일 존재 확인 (signCert.der + signPri.key) — 유효기간 파싱 실패: $_"
                     }
-                }
             }
         } catch {
             Write-Fail "T5" "NPKI 탐색 중 오류 — $_"
