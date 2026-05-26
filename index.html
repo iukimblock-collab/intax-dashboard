@@ -184,8 +184,12 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 /* ── 테이블 패널 (필터바 + 표 통합 컨테이너) ── */
 .tbl-panel{border:1px solid var(--border);border-radius:var(--r12);overflow:hidden}
 .tbl-panel .tbl-wrap{border:none;border-radius:0}
-/* ── 스티키 헤더: 거래처·기장료 페이지 테이블 ── */
-#page-clients .tbl-wrap,#page-fees .tbl-wrap{max-height:calc(100vh - var(--hh) - 220px);overflow-y:auto}
+/* ── 스티키 헤더: 거래처 페이지 테이블 (fees는 flex로 처리) ── */
+#page-clients .tbl-wrap{max-height:calc(100vh - var(--hh) - 220px);overflow-y:auto}
+/* ── 기장료 현황: 표가 하단까지 채우도록 ── */
+#page-view:has(#page-fees.active){overflow-y:hidden}
+#page-fees.active{flex:1;min-height:0;overflow:hidden}
+#page-fees .tbl-wrap{flex:1;overflow-y:auto;max-height:none!important}
 /* ── 거래처 필터바 ── */
 .cl-filterbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
 .cl-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -434,9 +438,12 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
         <div class="card"><div class="card-label">미납</div><div class="card-val tc-y" id="ff-unpaid">0원</div></div>
         <div class="card"><div class="card-label">체납</div><div class="card-val tc-r" id="ff-overdue">0원</div></div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:6px">
-        <span id="fee-cnt" class="tc-m" style="font-size:12px"></span>
-        <button class="btn btn-ghost btn-sm" onclick="resetFeeF()">필터 초기화</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <span class="tc-m" style="font-size:12px;letter-spacing:.03em">거래처 현황 '기장' 구분 연동</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="fee-cnt" class="tc-m" style="font-size:12px"></span>
+          <button class="btn btn-ghost btn-sm" onclick="resetFeeF()">필터 초기화</button>
+        </div>
       </div>
       <!-- 숨김 필터 -->
       <input type="search" id="ff-kw" style="display:none"/>
@@ -451,7 +458,6 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
           <button class="btn btn-primary btn-sm" onclick="applyFeePopup()">적용</button>
         </div>
       </div>
-      <div class="sh"><span class="sh-title">기장 거래처 기장료 현황</span><span class="tc-m" style="font-size:12px">거래처 현황 '기장' 구분 연동</span></div>
       <div class="tbl-wrap">
         <table>
           <thead>
