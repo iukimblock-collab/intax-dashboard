@@ -319,7 +319,7 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
             <button class="tab" data-p="year">연도</button>
           </div>
         </div>
-        <div class="g4">
+        <div class="g3">
           <div class="card">
             <div class="card-label">총 기장 거래처</div>
             <div class="card-val tc-a" id="kpi-c">0</div>
@@ -331,18 +331,8 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
             </div>
           </div>
           <div class="card"><div class="card-label">당월 기장료 합계</div><div class="card-val" id="kpi-f">0원</div><div class="card-chg" id="kpi-f2">납부 기준</div></div>
-          <div class="card"><div class="card-label">당해연도 누적 추산</div><div class="card-val tc-g" id="kpi-r">0원</div><div class="card-chg">연간 추산</div></div>
           <div class="card"><div class="card-label">재직 직원 수</div><div class="card-val" id="kpi-s">0명</div><div class="card-chg" id="kpi-s2">재직 중</div></div>
         </div>
-      </div>
-      <div class="g3">
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">법인 / 개인 비율</div><div style="height:160px;position:relative"><canvas id="ch-type"></canvas></div></div>
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">업종별 분포</div><canvas id="ch-sector" height="120"></canvas></div>
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">CMS 납부 현황</div><div style="height:160px;position:relative"><canvas id="ch-cms"></canvas></div></div>
-      </div>
-      <div class="g2">
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">월별 기장료 추이</div><canvas id="ch-revenue" height="160"></canvas></div>
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">거래처 수 추이</div><canvas id="ch-clients" height="160"></canvas></div>
       </div>
       <div class="g2">
         <div>
@@ -367,9 +357,6 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
     <!-- ── CLIENTS ── -->
     <div class="page" id="page-clients">
       <!-- 숨김 필터 (팝업·검색용) -->
-      <input type="search" id="f-kw" style="display:none"/>
-      <input type="search" id="f-bizno" style="display:none"/>
-      <select id="f-size" style="display:none"><option value="">전체</option><option>중소기업</option><option>소상공인</option><option>개인사업자</option></select>
 
       <input type="search" id="f-phone" style="display:none"/>
       <!-- 필터 팝업 -->
@@ -387,10 +374,10 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
           <div class="cl-filters">
             <select id="f-div" class="filter-sel"><option value="">구분 전체</option><option>기장</option><option>신고대리</option></select>
             <select id="f-type" class="filter-sel"><option value="">유형 전체</option><option>법인</option><option>개인</option></select>
+            <input type="search" id="f-kw" class="filter-sel" placeholder="업체명 검색" style="background-image:none;padding-right:8px;min-width:100px;max-width:130px"/>
+            <input type="search" id="f-bizno" class="filter-sel" placeholder="사업자번호" style="background-image:none;padding-right:8px;min-width:100px;max-width:130px"/>
             <select id="f-status" class="filter-sel"><option value="">상태 전체</option><option>정상</option><option>폐업</option></select>
-            <select id="f-sector" class="filter-sel"><option value="">업종 전체</option></select>
             <select id="f-staff" class="filter-sel"><option value="">담당자 전체</option></select>
-            <span id="fi-sector" style="display:none"></span>
             <span id="fi-staff" style="display:none"></span>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
@@ -411,10 +398,9 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
                 <th>#</th>
                 <th>구분</th>
                 <th>유형</th>
-                <th class="th-filter" data-fid="f-kw" style="cursor:pointer;user-select:none">업체명 <span class="f-ind" id="fi-kw"></span></th>
-                <th class="th-filter" data-fid="f-bizno" style="cursor:pointer;user-select:none">사업자번호 <span class="f-ind" id="fi-bizno"></span></th>
+                <th>업체명</th>
+                <th>사업자번호</th>
                 <th>상태</th>
-                <th class="th-filter" data-fid="f-size" style="cursor:pointer;user-select:none">업종 <span class="f-ind" id="fi-size"></span></th>
                 <th>기장료</th>
                 <th>담당직원</th>
                 <th class="th-filter" data-fid="f-phone" style="cursor:pointer;user-select:none">연락처 <span class="f-ind" id="fi-phone"></span></th>
@@ -812,23 +798,16 @@ function rDash(){
   document.getElementById('kpi-rep').textContent=actRep.length;
   document.getElementById('kpi-rep2').textContent='전체 '+DB.clients.filter(c=>c.div==='신고대리').length+'개 중 정상';
   document.getElementById('kpi-f').textContent=fmt(tf)+'원';
-  document.getElementById('kpi-r').textContent=fmt(tf*12)+'원';
   document.getElementById('kpi-s').textContent=DB.staff.filter(s=>s.status==='재직').length+'명';
   document.getElementById('kpi-s2').textContent='전체 '+DB.staff.length+'명 중 재직';
 
-  // 카드 클릭 → 거래처 현황 필터 연동
+  // KPI 숫자 클릭 → 거래처 현황 필터 연동
   const kpiC=document.getElementById('kpi-c');
   const kpiRep=document.getElementById('kpi-rep');
-  [kpiC, kpiC.closest('.card')].filter(Boolean).forEach(el=>{
-    el.style.cursor='pointer';
-    el.onclick=()=>{go('clients');setTimeout(()=>{const d=document.getElementById('f-div');if(d){d.value='기장';updateFilterIndicators();rClients();}},50);};
-  });
-  [kpiRep, kpiRep.closest && kpiRep.closest('[id]')].filter(Boolean).forEach(el=>{
-    el.style.cursor='pointer';
-  });
-  // 신고대리 숫자 클릭
-  kpiRep.style.cursor='pointer';
-  kpiRep.onclick=()=>{go('clients');setTimeout(()=>{const d=document.getElementById('f-div');if(d){d.value='신고대리';updateFilterIndicators();rClients();}},50);};
+  kpiC.style.cssText+='cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
+  kpiC.onclick=()=>{go('clients');setTimeout(()=>{const d=document.getElementById('f-div');if(d){d.value='기장';updateFilterIndicators();rClients();}},50);};
+  kpiRep.style.cssText+='cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
+  kpiRep.onclick=(e)=>{e.stopPropagation();go('clients');setTimeout(()=>{const d=document.getElementById('f-div');if(d){d.value='신고대리';updateFilterIndicators();rClients();}},50);};
 
   const rc=document.getElementById('d-clients');
   const recent=[...DB.clients].reverse().slice(0,5);
@@ -839,24 +818,6 @@ function rDash(){
     const cnt=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').length;
     return `<tr><td style="display:flex;align-items:center;gap:7px"><span style="width:20px;height:20px;border-radius:50%;background:${s.color}22;color:${s.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${s.name[0]}</span>${s.name}</td><td>${cnt}건</td><td><span class="dot ${s.status==='재직'?'dg':'dm'}"></span>${s.status}</td></tr>`;
   }).join('')||'<tr><td colspan="3" class="empty">직원 없음</td></tr>';
-
-  const mos=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  const fd=mos.map(()=>Math.round(tf*(0.82+Math.random()*.38)));
-  const cd=mos.map((_,i)=>Math.max(3,act.length-5+i+Math.floor(Math.random()*3)));
-  mkBar('ch-revenue',mos,fd,'기장료','#4f7eff');
-  mkBar('ch-clients',mos,cd,'거래처','#2ecfa8');
-
-  // 거래처 분포 차트 (법인/개인, 업종별, CMS)
-  const types={법인:0,개인:0};
-  DB.clients.forEach(c=>types[c.type]=(types[c.type]||0)+1);
-  mkDonut('ch-type',Object.keys(types),Object.values(types),['#4f7eff','#2ecfa8']);
-  const sm={};
-  DB.clients.forEach(c=>sm[c.sector]=(sm[c.sector]||0)+1);
-  const se=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  mkHBar('ch-sector',se.map(x=>x[0]),se.map(x=>x[1]),'#ff7c4f');
-  const cm={납부:0,미납:0,체납:0};
-  DB.clients.filter(c=>c.cms==='Y').forEach(c=>cm[c.cms_status]=(cm[c.cms_status]||0)+1);
-  mkDonut('ch-cms',Object.keys(cm),Object.values(cm),['#2ecfa8','#ffb830','#f05c5c']);
 
   // 홈택스 동기화 상태 카드 업데이트
   const badge=document.getElementById('dash-htx-badge');
@@ -892,11 +853,6 @@ document.getElementById('period-tabs').addEventListener('click',e=>{
 // ─── CLIENTS ─────────────────────────────────────
 function rClients(){
   // populate selects
-  const secs=[...new Set(DB.clients.map(c=>c.sector))].sort();
-  const fSec=document.getElementById('f-sector');
-  const sc=fSec.value;
-  fSec.innerHTML='<option value="">업종 전체</option>'+secs.map(s=>`<option value="${s}">${s}</option>`).join('');
-  fSec.value=sc;
   const fSt=document.getElementById('f-staff');
   const ss=fSt.value;
   fSt.innerHTML='<option value="">담당자 전체</option>'+DB.staff.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
@@ -906,21 +862,19 @@ function rClients(){
   const fdiv=document.getElementById('f-div').value;
   const ft=document.getElementById('f-type').value;
   const fs=document.getElementById('f-status').value;
-  const fsec=fSec.value;
   const fst=fSt.value;
-  const fsize=(document.getElementById('f-size')||{}).value||'';
   const kw=document.getElementById('f-kw').value.trim().toLowerCase();
   const kbiz=(document.getElementById('f-bizno')||{}).value?.trim().toLowerCase()||'';
   const kphone=(document.getElementById('f-phone')||{}).value?.trim().toLowerCase()||'';
   if(fdiv)   list=list.filter(c=>(c.div||'기장')===fdiv);
   if(ft)     list=list.filter(c=>c.type===ft);
   if(fs)     list=list.filter(c=>c.status===fs);
-  if(fsec)   list=list.filter(c=>c.sector===fsec);
   if(fst)    list=list.filter(c=>c.staff_id===fst);
-  if(fsize)  list=list.filter(c=>c.size===fsize);
   if(kw)     list=list.filter(c=>c.name.toLowerCase().includes(kw));
   if(kbiz)   list=list.filter(c=>c.biz_no.toLowerCase().includes(kbiz));
   if(kphone) list=list.filter(c=>c.phone.toLowerCase().includes(kphone));
+  list.sort((a,b)=>(a.div||'기장').localeCompare(b.div||'기장','ko'));
+  updateFilterIndicators();
   const _total=DB.clients.length;
   const _fCnt=document.getElementById('f-cnt');
   if(list.length===_total){
@@ -938,7 +892,6 @@ function rClients(){
       <td class="fw5">${c.name}</td>
       <td class="mono">${c.biz_no}</td>
       <td><span class="dot ${c.status==='정상'?'dg':'dr'}"></span>${c.status}</td>
-      <td class="tc-m"></td>
       <td class="mono">${fmt(c.fee)}원</td>
       <td>${sn(c.staff_id)}</td>
       <td class="mono">${c.phone}</td>
@@ -946,11 +899,11 @@ function rClients(){
         <button class="btn btn-ghost btn-sm btn-edit-only" onclick="openCM('${c.id}')">수정</button>
         <button class="btn btn-danger btn-sm btn-edit-only" onclick="delC('${c.id}')">삭제</button>
       </div></td>
-    </tr>`).join(''):'<tr><td colspan="11" class="empty">조건에 맞는 거래처 없음</td></tr>';
+    </tr>`).join(''):'<tr><td colspan="10" class="empty">조건에 맞는 거래처 없음</td></tr>';
 
 }
 
-['f-div','f-type','f-status','f-sector','f-staff','f-size'].forEach(id=>{
+['f-div','f-type','f-status','f-staff'].forEach(id=>{
   const el=document.getElementById(id);
   if(el) el.addEventListener('change',()=>{if(CUR==='clients')rClients();});
 });
@@ -960,7 +913,7 @@ function rClients(){
 });
 
 function resetF(){
-  ['f-div','f-type','f-status','f-sector','f-staff','f-size'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-div','f-type','f-status','f-staff'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f-kw','f-bizno','f-phone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   updateFilterIndicators();
   rClients();
@@ -1550,8 +1503,6 @@ const F_META = {
   'f-kw':     {label:'업체명', type:'text'},
   'f-bizno':  {label:'사업자번호', type:'text'},
   'f-status': {label:'상태',   type:'select', opts:['','정상','폐업'],          labels:['전체','정상','폐업']},
-  'f-sector': {label:'업종',   type:'select-dynamic'},
-  'f-size':   {label:'규모',   type:'select', opts:['','중소기업','소상공인','개인사업자'], labels:['전체','중소기업','소상공인','개인사업자']},
   'f-staff':  {label:'담당직원', type:'select-dynamic'},
   'f-phone':  {label:'연락처', type:'text'},
 };
