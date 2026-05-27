@@ -548,11 +548,7 @@ tbody tr.cl-row{cursor:pointer}
         <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 기여 기장료</div><canvas id="ch-sf" height="160"></canvas></div>
         <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 담당 거래처 수</div><canvas id="ch-sc" height="160"></canvas></div>
       </div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>직원명</th><th>담당 거래처</th><th>기여 기장료</th><th>잔여 연차</th><th>상태</th><th>액션</th></tr></thead>
-        <tbody id="st-tbody"></tbody></table>
-      </div>
-      <!-- 계정 관리 -->
+      <!-- 직원 + 계정 통합 테이블 -->
       <div>
         <div class="sh">
           <span class="sh-title">계정 관리</span>
@@ -562,9 +558,13 @@ tbody tr.cl-row{cursor:pointer}
           <div class="tbl-wrap" style="border:none;border-radius:0">
             <table>
               <thead>
-                <tr><th>이름</th><th>권한</th><th>로그인 ID</th><th>상태</th><th style="min-width:220px">액션</th></tr>
+                <tr>
+                  <th>이름</th><th>권한</th><th>로그인 ID</th>
+                  <th>담당 거래처</th><th>기여 기장료</th><th>잔여 연차</th>
+                  <th>상태</th><th style="min-width:260px">액션</th>
+                </tr>
               </thead>
-              <tbody id="acc-tbody"></tbody>
+              <tbody id="merged-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -1133,47 +1133,56 @@ function rStaff(){
   mkBar2('ch-sf',names,fees,'기여 기장료',cols);
   mkBar2('ch-sc',names,cnts,'담당 수',cols);
 
-  const tb=document.getElementById('st-tbody');
-  tb.innerHTML=DB.staff.map(s=>{
-    const cnt=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').length;
-    const fee=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').reduce((a,c)=>a+c.fee,0);
-    return `<tr>
-      <td class="fw5">${s.name}</td><td>${cnt}건</td>
-      <td class="mono">${fmt(fee)}원</td><td>${s.leave}일</td>
-      <td><span class="tag ${s.status==='재직'?'tag-green':'tag-red'}">${s.status}</span></td>
-      <td><div style="display:flex;gap:4px">
-        <button class="btn btn-ghost btn-sm" onclick="openSM('${s.id}')">수정</button>
-        <button class="btn btn-danger btn-sm" onclick="delS('${s.id}')">삭제</button>
-      </div></td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="6" class="empty">직원 없음</td></tr>';
-
-  // 계정 관리 테이블
+  // ── 통합 테이블 (직원 + 계정) ──
   const isBoss=ME&&ME.role==='대표';
-  const atb=document.getElementById('acc-tbody');
-  if(atb){
-    atb.innerHTML=(DB.users||[]).map(u=>{
+  const mtb=document.getElementById('merged-tbody');
+  if(mtb){
+    const allRows=[];
+    // 1. 대표 계정 (DB.staff 미보유)
+    (DB.users||[]).filter(u=>u.role==='대표').forEach(u=>{
       const isMe=ME&&u.id===ME.id;
-      const isBossAcc=u.role==='대표';
-      const linkedStaff=u.staff_id?DB.staff.find(x=>x.id===u.staff_id):null;
-      const staffStatusBadge=linkedStaff?`<span class="tag ${linkedStaff.status==='재직'?'tag-blue':'tag-red'}" style="margin-left:5px">${linkedStaff.status}</span>`:'';
-      return `<tr>
-        <td>
-          <div style="display:flex;align-items:center;gap:7px">
-            <span style="width:26px;height:26px;border-radius:50%;background:${isBossAcc?'var(--accent-a)':'var(--surface3)'};color:${isBossAcc?'var(--accent)':'var(--muted)'};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${u.name[0]}</span>
-            <span class="fw5">${u.name}</span>${isMe?'<span class="tag tag-green" style="font-size:10px;padding:1px 6px;margin-left:2px">나</span>':''}
-          </div>
-        </td>
-        <td><span class="tag ${isBossAcc?'tag-blue':'tag-gray'}">${u.role}</span></td>
+      allRows.push(`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-a);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${u.name[0]}</span>
+          <span class="fw5">${u.name}</span>${isMe?'<span class="tag tag-green" style="font-size:10px;padding:1px 6px;margin-left:2px">나</span>':''}
+        </div></td>
+        <td><span class="tag tag-blue">${u.role}</span></td>
         <td class="mono tc-m" style="font-size:13px">${u.loginId||'—'}</td>
-        <td>${isMe?'<span class="tag tag-green">접속 중</span>':'<span class="tag tag-gray">오프라인</span>'}${!isBossAcc?staffStatusBadge:''}</td>
-        <td>${isBoss?`<div style="display:flex;gap:5px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">수정</button>
-            <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비밀번호 변경</button>
-            ${!isBossAcc?`<button class="btn btn-danger btn-sm" onclick="delA('${u.id}')">삭제</button>`:''}
-          </div>`:'—'}</td>
-      </tr>`;
-    }).join('')||'<tr><td colspan="5" class="empty">계정 없음</td></tr>';
+        <td class="tc-m">—</td><td class="tc-m">—</td><td class="tc-m">—</td>
+        <td>${isMe?'<span class="tag tag-green">접속 중</span>':'<span class="tag tag-gray">오프라인</span>'}</td>
+        <td>${isBoss?`<div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">계정 수정</button>
+          <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비번 변경</button>
+        </div>`:'—'}</td>
+      </tr>`);
+    });
+    // 2. 직원 행 (DB.staff 기준, 연결된 계정 있으면 함께 표시)
+    DB.staff.forEach(s=>{
+      const u=(DB.users||[]).find(x=>x.staff_id===s.id);
+      const isMe=ME&&u&&u.id===ME.id;
+      const cnt=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').length;
+      const fee=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').reduce((a,c)=>a+c.fee,0);
+      allRows.push(`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;border-radius:50%;background:${s.color}22;color:${s.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${s.name[0]}</span>
+          <span class="fw5">${s.name}</span>${isMe?'<span class="tag tag-green" style="font-size:10px;padding:1px 6px;margin-left:2px">나</span>':''}
+        </div></td>
+        <td>${u?`<span class="tag tag-gray">${u.role}</span>`:'<span style="color:var(--dim);font-size:12px">미등록</span>'}</td>
+        <td class="mono tc-m" style="font-size:13px">${u?(u.loginId||'—'):'—'}</td>
+        <td>${cnt}건</td>
+        <td class="mono">${fmt(fee)}원</td>
+        <td>${s.leave}일</td>
+        <td><span class="tag ${s.status==='재직'?'tag-green':'tag-red'}">${s.status}</span></td>
+        <td>${isBoss?`<div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="openSM('${s.id}')">직원 수정</button>
+          ${u?`<button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">계정 수정</button>
+          <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비번 변경</button>
+          <button class="btn btn-danger btn-sm" onclick="delA('${u.id}')">삭제</button>`:
+          `<button class="btn btn-danger btn-sm" onclick="delS('${s.id}')">삭제</button>`}
+        </div>`:'—'}</td>
+      </tr>`);
+    });
+    mtb.innerHTML=allRows.length?allRows.join(''):'<tr><td colspan="8" class="empty">등록된 직원이 없습니다</td></tr>';
   }
   syncSidebar();
 }
@@ -1255,7 +1264,7 @@ function openSM(id){
       <div class="form-group">
         <div class="form-label">이름</div>
         <input class="form-input" id="m-sn" value="${s.name||''}" ${linkedUser?'readonly style="opacity:.55;cursor:not-allowed"':''}/>
-        ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">이름은 설정 / 권한에서 변경하세요</div>`:''}
+        ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">이름은 계정 수정에서 변경하세요</div>`:''}
       </div>
       <div class="form-group">
         <div class="form-label">잔여 연차 (일)</div>
@@ -1268,7 +1277,7 @@ function openSM(id){
         <option value="재직" ${s.status!=='퇴사'?'selected':''}>재직</option>
         <option value="퇴사" ${s.status==='퇴사'?'selected':''}>퇴사</option>
       </select>
-      ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">설정 / 권한 계정 수정에서도 변경 가능합니다</div>`:''}
+      ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">계정 수정에서도 변경 가능합니다</div>`:''}
     </div>
     <div class="form-group"><div class="form-label">아바타 색상</div>
       <div style="display:flex;gap:8px;margin-top:4px">${cols.map(col=>`<div onclick="pickCol(this,'${col}')" style="width:26px;height:26px;border-radius:50%;background:${col};cursor:pointer;border:2px solid ${(s.color||cols[0])===col?'#fff':'transparent'};transition:border .15s" data-col="${col}"></div>`).join('')}</div>
