@@ -1125,10 +1125,6 @@ function rStaff(){
         <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 11px"><div style="font-size:11.5px;color:var(--muted);margin-bottom:2px">기여 기장료</div><div class="mono fw5" style="font-size:13px">${fmt(fee)}원</div></div>
       </div>
       <div style="margin-top:9px;font-size:12.5px;color:var(--muted)">잔여 연차 <span style="color:var(--text)">${s.leave}일</span></div>
-      <div style="display:flex;gap:6px;margin-top:11px">
-        <button class="btn btn-ghost btn-sm btn-edit-only" onclick="openSM('${s.id}')">수정</button>
-        <button class="btn btn-danger btn-sm btn-edit-only" onclick="delS('${s.id}')">삭제</button>
-      </div>
     </div>`;
   });
   cards.innerHTML=rows.join('');
