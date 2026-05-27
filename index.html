@@ -685,13 +685,14 @@ const _SM={
 function applyStaffMap(){
   let changed=0;
   DB.clients.forEach(c=>{
-    if(c.staff_id) return; // 이미 배정된 거래처는 건너뜀
+    if(c.staff_id) return;
     const s=(c.biz_no||'').replace(/[^0-9]/g,'');
     if(!s) return;
-    // 8자리 접두 매칭: DB 10자리 vs 엑셀 8자리
-    const staffName=_SM[s]||Object.keys(_SM).find(k=>s.startsWith(k)||k.startsWith(s));
-    if(!staffName) return;
-    const name=typeof staffName==='string'?staffName:_SM[staffName];
+    // 직접 매칭 → 없으면 8자리 접두 매칭 (DB 10자리 vs 엑셀 8자리)
+    const matchKey=_SM[s]?s:Object.keys(_SM).find(k=>s.startsWith(k)||k.startsWith(s));
+    if(!matchKey) return;
+    const name=_SM[matchKey];
+    if(!name) return;
     const staff=DB.staff.find(x=>x.name===name);
     if(staff){c.staff_id=staff.id;changed++;}
   });
