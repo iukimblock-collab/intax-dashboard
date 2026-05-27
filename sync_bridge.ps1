@@ -150,6 +150,74 @@ try {
                 Send-Json $ctx @{ ok=$true }
             }
 
+            "/verify-status" {
+                # ── 국세청 사업자 상태 조회 API ──────────────────────
+                $envFile = Join-Path $Root ".env"
+                $ntsKey  = $null
+                if (Test-Path $envFile) {
+                    (Get-Content $envFile -Encoding UTF8) | ForEach-Object {
+                        if ($_ -match "^NTS_API_KEY=(.+)") { $ntsKey = $Matches[1].Trim() }
+                    }
+                }
+                if (-not $ntsKey) {
+                    Send-Json $ctx @{ status="error"; message=".env 파일에 NTS_API_KEY가 없습니다. data.go.kr에서 무료 키를 발급받아 추가하세요." } 400
+                    break
+                }
+
+                # POST body 읽기 (JSON 배열: ["1234567890", ...])
+                $bodyText = ""
+                try {
+                    $sr = New-Object System.IO.StreamReader($ctx.Request.InputStream, [System.Text.Encoding]::UTF8)
+                    $bodyText = $sr.ReadToEnd(); $sr.Close()
+                } catch {}
+
+                $bNosRaw = @()
+                try { $bNosRaw = @($bodyText | ConvertFrom-Json) } catch {}
+                $bNos = @($bNosRaw | ForEach-Object { ($_ -replace "[^0-9]","") } |
+                    Where-Object { $_.Length -eq 10 } | Select-Object -Unique)
+
+                if ($bNos.Count -eq 0) {
+                    Send-Json $ctx @{ status="error"; message="유효한 사업자번호가 없습니다." } 400
+                    break
+                }
+
+                $resultMap = @{}
+                $errMsg    = $null
+                $i = 0
+                while ($i -lt $bNos.Count -and -not $errMsg) {
+                    $end   = [Math]::Min($i + 99, $bNos.Count - 1)
+                    $batch = @($bNos[$i..$end])
+                    $reqBody = (@{ b_no = $batch } | ConvertTo-Json -Compress)
+                    try {
+                        $apiResp = Invoke-RestMethod `
+                            -Uri "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=$ntsKey" `
+                            -Method POST -Body $reqBody `
+                            -ContentType "application/json; charset=utf-8" `
+                            -TimeoutSec 30
+                        if ($apiResp.data) {
+                            $apiResp.data | ForEach-Object {
+                                $st = switch ($_.b_stt_cd) {
+                                    "01" { "정상" }
+                                    "02" { "휴업" }
+                                    "03" { "폐업" }
+                                    default { $null }
+                                }
+                                if ($st) { $resultMap[$_.b_no] = $st }
+                            }
+                        }
+                    } catch {
+                        $errMsg = "NTS API 오류: $($_.Exception.Message)"
+                    }
+                    $i += 100
+                }
+
+                if ($errMsg) {
+                    Send-Json $ctx @{ status="error"; message=$errMsg } 500
+                } else {
+                    Send-Json $ctx @{ status="ok"; data=$resultMap; verified=$resultMap.Count }
+                }
+            }
+
             default {
                 Send-Json $ctx @{ error="알 수 없는 경로: $path" } 404
             }
