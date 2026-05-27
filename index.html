@@ -253,8 +253,8 @@ tbody tr.cl-row{cursor:pointer}
     <button class="login-btn" onclick="doLogin()">로그인</button>
     <button class="login-btn" style="background:transparent;border:1px solid var(--border2);color:var(--muted);margin-top:8px" onclick="showRegister()">계정 생성</button>
     <div class="login-hint">
-      대표 계정: <b>김인욱</b> / <b>1234</b><br/>
-      직원 계정은 직원 현황에서 추가 후 사용하세요
+      대표: <b>김인욱</b> / <b>1234</b><br/>
+      직원: <b>강수민</b> · <b>이지우</b> · <b>김지민</b> / <b>0000</b>
     </div>
   </div>
 
@@ -545,8 +545,8 @@ tbody tr.cl-row{cursor:pointer}
     <div class="page" id="page-staff">
       <div class="g3" id="staff-cards"></div>
       <div class="g2">
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 기여 기장료</div><canvas id="ch-sf" height="160"></canvas></div>
-        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 담당 거래처 수</div><canvas id="ch-sc" height="160"></canvas></div>
+        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 기여 기장료</div><canvas id="ch-sf" height="80"></canvas></div>
+        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 담당 거래처 수</div><canvas id="ch-sc" height="80"></canvas></div>
       </div>
       <!-- 직원 + 계정 통합 테이블 -->
       <div>
@@ -678,6 +678,14 @@ async function init(){
       const s=DB.staff.find(x=>x.name===u.name&&!(DB.users||[]).some(uu=>uu.staff_id===x.id));
       if(s) u.staff_id=s.id;
     });
+    // 직원 3명 계정 없으면 자동 생성 (기존 세션 마이그레이션)
+    [{name:'강수민'},{name:'이지우'},{name:'김지민'}].forEach(({name})=>{
+      const s=DB.staff.find(x=>x.name===name);
+      if(!s) return;
+      if((DB.users||[]).find(u=>u.staff_id===s.id)) return;
+      if(!DB.users) DB.users=[];
+      DB.users.push({id:'u_'+s.id,name,role:'직원',pw:'0000',loginId:name,access:'거래처, 안내문, 직원',staff_id:s.id});
+    });
     await save();
   } else await seed();
   // 기존 세션 확인
@@ -764,13 +772,16 @@ document.addEventListener('keydown',e=>{
 });
 
 async function seed(){
-  DB.users=[
-    {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
-  ];
   DB.staff=[
     {id:'s1',name:'강수민',leave:0,status:'재직',color:'#4f7eff'},
     {id:'s2',name:'이지우',leave:0,status:'재직',color:'#2ecfa8'},
     {id:'s3',name:'김지민',leave:0,status:'재직',color:'#ff7c4f'},
+  ];
+  DB.users=[
+    {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
+    {id:'u_s1',name:'강수민',role:'직원',pw:'0000',loginId:'강수민',access:'거래처, 안내문, 직원',staff_id:'s1'},
+    {id:'u_s2',name:'이지우',role:'직원',pw:'0000',loginId:'이지우',access:'거래처, 안내문, 직원',staff_id:'s2'},
+    {id:'u_s3',name:'김지민',role:'직원',pw:'0000',loginId:'김지민',access:'거래처, 안내문, 직원',staff_id:'s3'},
   ];
   const secs=['제조업','도소매','서비스','음식업','건설업','IT','부동산','기타'];
   const names=['가나다 주식회사','나다라 상사','다라마 컨설팅','라마바 F&B','마바사 건설','바사아 솔루션','사아자 부동산','아자차 물산','자차카 서비스','차카타 상회','카타파 주식회사','타파하 개인','파하가 기업','하가나 코퍼레이션','가나다 무역'];
@@ -1099,6 +1110,7 @@ function fillTmpl(){
 
 // ─── STAFF ───────────────────────────────────────
 function rStaff(){
+  const isBoss=ME&&ME.role==='대표';
   const cards=document.getElementById('staff-cards');
   const rows=DB.staff.map(s=>{
     const cnt=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').length;
@@ -1115,12 +1127,12 @@ function rStaff(){
       </div>
       <div style="margin-top:9px;font-size:12.5px;color:var(--muted)">잔여 연차 <span style="color:var(--text)">${s.leave}일</span></div>
       <div style="display:flex;gap:6px;margin-top:11px">
-        <button class="btn btn-ghost btn-sm" onclick="openSM('${s.id}')">수정</button>
-        <button class="btn btn-danger btn-sm" onclick="delS('${s.id}')">삭제</button>
+        <button class="btn btn-ghost btn-sm btn-edit-only" onclick="openSM('${s.id}')">수정</button>
+        <button class="btn btn-danger btn-sm btn-edit-only" onclick="delS('${s.id}')">삭제</button>
       </div>
     </div>`;
   });
-  rows.push(`<div class="staff-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:dashed;cursor:pointer;min-height:160px;gap:6px;text-align:center" onclick="openSM()">
+  if(isBoss) rows.push(`<div class="staff-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:dashed;cursor:pointer;min-height:160px;gap:6px;text-align:center" onclick="openSM()">
     <span class="tc-m" style="font-size:13.5px">+ 직원 추가</span>
     <span style="font-size:11.5px;color:var(--dim)">클릭하여<br>직원을 등록하세요</span>
   </div>`);
@@ -1134,7 +1146,6 @@ function rStaff(){
   mkBar2('ch-sc',names,cnts,'담당 수',cols);
 
   // ── 통합 테이블 (직원 + 계정) ──
-  const isBoss=ME&&ME.role==='대표';
   const mtb=document.getElementById('merged-tbody');
   if(mtb){
     const allRows=[];
