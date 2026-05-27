@@ -172,6 +172,8 @@ tbody tr:hover{background:var(--surface3)!important}
 /* 권한별 숨김 */
 .role-boss-only{display:none}
 body.role-boss .role-boss-only{display:flex}
+.role-boss-block{display:none}
+body.role-boss .role-boss-block{display:block}
 body.role-boss .btn-edit-only{pointer-events:auto;opacity:1}
 body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-allowed}
 /* 로그아웃 버튼 */
@@ -381,8 +383,8 @@ tbody tr.cl-row{cursor:pointer}
           <div class="tbl-wrap"><table><thead><tr><th>직원명</th><th>담당 수</th><th>상태</th></tr></thead><tbody id="d-staff"></tbody></table></div>
         </div>
       </div>
-      <!-- 시스템 상태 통합 카드 -->
-      <div style="width:calc(50% - 6px)">
+      <!-- 시스템 상태 통합 카드 (대표만) -->
+      <div class="role-boss-block" style="width:calc(50% - 6px)">
         <div class="sh"><span class="sh-title">시스템</span></div>
         <div class="card" style="padding:0;overflow:hidden">
           <!-- 홈택스 동기화 행 -->
@@ -735,8 +737,10 @@ async function init(){
       if(!s) return;
       if((DB.users||[]).find(u=>u.staff_id===s.id)) return;
       if(!DB.users) DB.users=[];
-      DB.users.push({id:'u_'+s.id,name,role:'직원',pw:'0000',loginId:name,access:'거래처, 안내문, 직원',staff_id:s.id});
+      DB.users.push({id:'u_'+s.id,name,role:'직원',pw:'1234',loginId:name,access:'거래처, 안내문, 직원',staff_id:s.id});
     });
+    // 직원 비밀번호 0000 → 1234 마이그레이션
+    (DB.users||[]).filter(u=>u.role==='직원'&&u.pw==='0000').forEach(u=>{u.pw='1234';});
     applyStaffMap();
     await save();
   } else await seed();
@@ -831,9 +835,9 @@ async function seed(){
   ];
   DB.users=[
     {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
-    {id:'u_s1',name:'강수민',role:'직원',pw:'0000',loginId:'강수민',access:'거래처, 안내문, 직원',staff_id:'s1'},
-    {id:'u_s2',name:'이지우',role:'직원',pw:'0000',loginId:'이지우',access:'거래처, 안내문, 직원',staff_id:'s2'},
-    {id:'u_s3',name:'김지민',role:'직원',pw:'0000',loginId:'김지민',access:'거래처, 안내문, 직원',staff_id:'s3'},
+    {id:'u_s1',name:'강수민',role:'직원',pw:'1234',loginId:'강수민',access:'거래처, 안내문, 직원',staff_id:'s1'},
+    {id:'u_s2',name:'이지우',role:'직원',pw:'1234',loginId:'이지우',access:'거래처, 안내문, 직원',staff_id:'s2'},
+    {id:'u_s3',name:'김지민',role:'직원',pw:'1234',loginId:'김지민',access:'거래처, 안내문, 직원',staff_id:'s3'},
   ];
   const secs=['제조업','도소매','서비스','음식업','건설업','IT','부동산','기타'];
   const names=['가나다 주식회사','나다라 상사','다라마 컨설팅','라마바 F&B','마바사 건설','바사아 솔루션','사아자 부동산','아자차 물산','자차카 서비스','차카타 상회','카타파 주식회사','타파하 개인','파하가 기업','하가나 코퍼레이션','가나다 무역'];
