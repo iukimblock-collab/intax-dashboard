@@ -749,12 +749,11 @@ function applyStaffMap(){
   let changed=0;
   DB.clients.forEach(c=>{
     if(c.staff_id) return;
-    const s=(c.biz_no||'').replace(/[^0-9]/g,'');
-    if(!s) return;
-    // 직접 매칭 → 없으면 8자리 접두 매칭 (DB 10자리 vs 엑셀 8자리)
-    const matchKey=_SM[s]?s:Object.keys(_SM).find(k=>s.startsWith(k)||k.startsWith(s));
-    if(!matchKey) return;
-    const name=_SM[matchKey];
+    const d=(c.biz_no||'').replace(/[^0-9]/g,'');
+    if(!d) return;
+    // 엑셀 키 = 10자리 사업자번호의 앞5자리 + 뒤3자리 (중간 2자리 제외)
+    const key=d.length===10?d.substr(0,5)+d.substr(7,3):d;
+    const name=_SM[key];
     if(!name) return;
     const staff=DB.staff.find(x=>x.name===name);
     if(staff){c.staff_id=staff.id;changed++;}
