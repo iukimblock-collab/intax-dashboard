@@ -203,6 +203,39 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 .empty{padding:40px;color:var(--dim);font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:8px}
 /* ── 홈택스 동기화 바 (패널 내부용) ── */
 .tbl-panel #htx-sync-bar{border-radius:0;border-left:none;border-right:none;border-top:none}
+/* ── 토스트 ── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:3000;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:var(--r8);padding:11px 16px;font-size:13.5px;display:flex;align-items:center;gap:8px;min-width:200px;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.45);pointer-events:auto;animation:toastIn .2s ease}
+.toast.t-green{border-left-color:var(--green)}
+.toast.t-red{border-left-color:var(--red)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
+/* ── 모바일 햄버거 ── */
+#menu-btn{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--r8);color:var(--muted);cursor:pointer;padding:5px 10px;font-size:17px;line-height:1;align-items:center}
+#menu-btn:hover{color:var(--text);background:var(--surface2)}
+#mob-overlay{display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.55)}
+@media(max-width:640px){
+  #menu-btn{display:flex}
+  #sidebar.mob-open{display:flex!important;position:fixed;left:0;top:0;bottom:0;width:224px;z-index:900;box-shadow:8px 0 32px rgba(0,0,0,.5)}
+  #mob-overlay.open{display:block}
+}
+/* ── 거래처 슬라이드 드로어 ── */
+#client-drawer{position:fixed;right:0;top:var(--hh);bottom:0;width:340px;background:var(--surface);border-left:1px solid var(--border2);z-index:600;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);overflow:hidden;display:flex;flex-direction:column}
+#client-drawer.open{transform:translateX(0)}
+#drawer-overlay{display:none;position:fixed;inset:0;z-index:599;background:rgba(0,0,0,.3)}
+#drawer-overlay.open{display:block}
+.drawer-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drawer-body{padding:18px 20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.drawer-row{display:flex;flex-direction:column;gap:3px}
+.drawer-lbl{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.drawer-val{font-size:13.5px;color:var(--text)}
+.drawer-sep{border-top:1px solid var(--border);padding-top:12px;margin-top:2px;display:flex;flex-direction:column;gap:12px}
+/* ── 정렬 가능 헤더 ── */
+.th-sort{cursor:pointer;user-select:none;transition:background .1s,color .1s}
+.th-sort:hover{background:var(--surface3)!important;color:var(--text)!important}
+.th-sort.s-asc::after{content:' ▲';font-size:9px;color:var(--accent);opacity:1}
+.th-sort.s-desc::after{content:' ▼';font-size:9px;color:var(--accent);opacity:1}
+tbody tr.cl-row{cursor:pointer}
 </style>
 </head>
 <body>
@@ -294,6 +327,7 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 <!-- MAIN -->
 <div id="main">
   <header id="topbar">
+    <button id="menu-btn" onclick="toggleSidebar()">☰</button>
     <span id="page-title">대시보드</span>
     <span class="tb-sep">/</span>
     <span class="tb-bread" id="page-bread">경영 현황 한눈에 보기</span>
@@ -330,7 +364,15 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
               <div class="card-chg" id="kpi-rep2">신고대리 거래처</div>
             </div>
           </div>
-          <div class="card"><div class="card-label">당월 기장료 합계</div><div class="card-val" id="kpi-f">0원</div><div class="card-chg" id="kpi-f2">납부 기준</div></div>
+          <div class="card">
+            <div class="card-label">기장료 합계</div>
+            <div class="card-val" id="kpi-f">0원</div>
+            <div class="card-chg" id="kpi-f2">당월 기준</div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
+              <span>기장 <span id="kpi-fk" style="font-family:var(--mono);color:var(--accent);font-size:12.5px">-</span></span>
+              <span>신고대리 <span id="kpi-fr" style="font-family:var(--mono);color:var(--yellow);font-size:12.5px">-</span></span>
+            </div>
+          </div>
           <div class="card"><div class="card-label">재직 직원 수</div><div class="card-val" id="kpi-s">0명</div><div class="card-chg" id="kpi-s2">재직 중</div></div>
         </div>
       </div>
@@ -396,13 +438,13 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
             <thead>
               <tr id="cl-thead-row">
                 <th>#</th>
-                <th>구분</th>
+                <th class="th-sort s-asc" id="th-div" onclick="setSortCl('div')">구분</th>
                 <th>유형</th>
-                <th>업체명</th>
+                <th class="th-sort" id="th-name" onclick="setSortCl('name')">업체명</th>
                 <th>사업자번호</th>
                 <th>상태</th>
-                <th>기장료</th>
-                <th>담당직원</th>
+                <th class="th-sort" id="th-fee" onclick="setSortCl('fee')">기장료</th>
+                <th class="th-sort" id="th-staff" onclick="setSortCl('staff')">담당직원</th>
                 <th class="th-filter" data-fid="f-phone" style="cursor:pointer;user-select:none">연락처 <span class="f-ind" id="fi-phone"></span></th>
                 <th>액션</th>
               </tr>
@@ -540,6 +582,22 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
   </div>
 </div>
 </div>
+
+<!-- CLIENT DRAWER -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="client-drawer">
+  <div class="drawer-hd">
+    <span id="drawer-name" style="font-size:15px;font-weight:500"></span>
+    <button onclick="closeDrawer()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- MOBILE OVERLAY -->
+<div id="mob-overlay" onclick="closeSidebar()"></div>
 
 <!-- MODAL -->
 <div id="modal-overlay">
@@ -789,15 +847,23 @@ function render(p){
 
 // ─── DASHBOARD ───────────────────────────────────
 function rDash(){
+  const period=document.querySelector('#period-tabs .tab.active')?.dataset.p||'month';
+  const mult=period==='year'?12:period==='quarter'?3:1;
+  const lbl=period==='year'?'연간':period==='quarter'?'당분기':'당월';
   const act=DB.clients.filter(c=>c.status==='정상');
   const actKijang=act.filter(c=>(c.div||'기장')==='기장');
   const actRep=act.filter(c=>c.div==='신고대리');
-  const tf=actKijang.reduce((s,c)=>s+c.fee,0);
+  const baseK=actKijang.reduce((s,c)=>s+c.fee,0);
+  const baseR=actRep.reduce((s,c)=>s+c.fee,0);
+  const tf=(baseK+baseR)*mult;
   document.getElementById('kpi-c').textContent=actKijang.length;
   document.getElementById('kpi-c2').textContent='전체 '+DB.clients.filter(c=>(c.div||'기장')==='기장').length+'개 중 정상';
   document.getElementById('kpi-rep').textContent=actRep.length;
   document.getElementById('kpi-rep2').textContent='전체 '+DB.clients.filter(c=>c.div==='신고대리').length+'개 중 정상';
   document.getElementById('kpi-f').textContent=fmt(tf)+'원';
+  document.getElementById('kpi-f2').textContent=lbl+' 기장료 기준';
+  document.getElementById('kpi-fk').textContent=fmt(baseK*mult)+'원';
+  document.getElementById('kpi-fr').textContent=fmt(baseR*mult)+'원';
   document.getElementById('kpi-s').textContent=DB.staff.filter(s=>s.status==='재직').length+'명';
   document.getElementById('kpi-s2').textContent='전체 '+DB.staff.length+'명 중 재직';
 
@@ -873,7 +939,22 @@ function rClients(){
   if(kw)     list=list.filter(c=>c.name.toLowerCase().includes(kw));
   if(kbiz)   list=list.filter(c=>c.biz_no.toLowerCase().includes(kbiz));
   if(kphone) list=list.filter(c=>c.phone.toLowerCase().includes(kphone));
-  list.sort((a,b)=>(a.div||'기장').localeCompare(b.div||'기장','ko'));
+  // 정렬
+  list.sort((a,b)=>{
+    let av,bv;
+    if(clSort.key==='name'){av=a.name||'';bv=b.name||'';}
+    else if(clSort.key==='fee'){av=a.fee||0;bv=b.fee||0;}
+    else if(clSort.key==='staff'){av=sn(a.staff_id);bv=sn(b.staff_id);}
+    else{av=(a.div||'기장');bv=(b.div||'기장');}
+    const cmp=typeof av==='number'?av-bv:av.localeCompare(bv,'ko');
+    return clSort.dir==='asc'?cmp:-cmp;
+  });
+  // 정렬 인디케이터 업데이트
+  ['div','name','fee','staff'].forEach(k=>{
+    const el=document.getElementById('th-'+k);
+    if(!el) return;
+    el.className='th-sort'+(clSort.key===k?' s-'+clSort.dir:'');
+  });
   updateFilterIndicators();
   const _total=DB.clients.length;
   const _fCnt=document.getElementById('f-cnt');
@@ -885,7 +966,7 @@ function rClients(){
 
   const tb=document.getElementById('cl-tbody');
   tb.innerHTML=list.length?list.map((c,i)=>`
-    <tr>
+    <tr class="cl-row" onclick="openDrawer('${c.id}')">
       <td class="mono tc-m">${String(i+1).padStart(3,'0')}</td>
       <td><span class="tag ${c.div==='신고대리'?'tag-yellow':'tag-blue'}">${c.div||'기장'}</span></td>
       <td><span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span></td>
@@ -895,11 +976,15 @@ function rClients(){
       <td class="mono">${fmt(c.fee)}원</td>
       <td>${sn(c.staff_id)}</td>
       <td class="mono">${c.phone}</td>
-      <td><div style="display:flex;gap:4px">
+      <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
         <button class="btn btn-ghost btn-sm btn-edit-only" onclick="openCM('${c.id}')">수정</button>
         <button class="btn btn-danger btn-sm btn-edit-only" onclick="delC('${c.id}')">삭제</button>
       </div></td>
-    </tr>`).join(''):'<tr><td colspan="10" class="empty">조건에 맞는 거래처 없음</td></tr>';
+    </tr>`).join(''):`<tr><td colspan="10" class="empty">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="opacity:.3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>조건에 맞는 거래처가 없습니다</span>
+      <button class="btn btn-ghost btn-sm" onclick="resetF()">필터 초기화</button>
+    </td></tr>`;
 
 }
 
@@ -1174,12 +1259,14 @@ async function saveC(){
   const obj={id:EID||('c'+Date.now()),name,div:gv('m-div')||'기장',biz_no:gv('m-biz'),type:gv('m-type'),status:gv('m-status'),size:gv('m-size'),sector:gv('m-sector'),fee:Number(gv('m-fee'))||0,cms:gv('m-cms'),cms_status:gv('m-cmss'),staff_id:gv('m-staff'),phone:gv('m-phone'),hometax_id:gv('m-htx'),karinara_id:gv('m-kar'),note:gv('m-note')};
   if(EID){const i=DB.clients.findIndex(x=>x.id===EID);DB.clients[i]=obj;}else DB.clients.push(obj);
   await save(); closeModal(); render('clients');
+  showToast(EID?'거래처가 수정됐습니다.':'거래처가 등록됐습니다.','green');
 }
 
 async function delC(id){
   if(!confirm('이 거래처를 삭제할까요?')) return;
   DB.clients=DB.clients.filter(c=>c.id!==id);
   await save(); rClients();
+  showToast('거래처가 삭제됐습니다.','red');
 }
 
 // ─── MODAL: STAFF ────────────────────────────────
@@ -1577,6 +1664,86 @@ function updateFilterIndicators() {
     const sel = document.querySelector(`.filter-sel#${fid}`);
     if (sel) sel.classList.toggle('active', !!val);
   });
+}
+
+// ─── TOAST ───────────────────────────────────────
+function showToast(msg, type=''){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className='toast'+(type?' t-'+type:'');
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut .2s ease forwards';setTimeout(()=>t.remove(),200);},2600);
+}
+
+// ─── MOBILE SIDEBAR ──────────────────────────────
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('mob-open');
+  document.getElementById('mob-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mob-overlay').classList.remove('open');
+}
+document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',closeSidebar));
+
+// ─── CLIENT SORT ─────────────────────────────────
+let clSort={key:'div',dir:'asc'};
+function setSortCl(key){
+  if(clSort.key===key) clSort.dir=clSort.dir==='asc'?'desc':'asc';
+  else{clSort.key=key;clSort.dir='asc';}
+  rClients();
+}
+
+// ─── CLIENT DRAWER ───────────────────────────────
+function openDrawer(id){
+  const c=DB.clients.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('drawer-name').textContent=c.name;
+  const staff=DB.staff.find(s=>s.id===c.staff_id);
+  document.getElementById('drawer-body').innerHTML=`
+    <div class="drawer-row">
+      <div class="drawer-lbl">구분 / 유형</div>
+      <div class="drawer-val" style="display:flex;gap:6px;align-items:center;margin-top:2px">
+        <span class="tag ${c.div==='신고대리'?'tag-yellow':'tag-blue'}">${c.div||'기장'}</span>
+        <span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span>
+        <span class="tag ${c.status==='정상'?'tag-green':'tag-gray'}"><span class="dot ${c.status==='정상'?'dg':'dr'}"></span>${c.status}</span>
+      </div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">사업자번호</div>
+      <div class="drawer-val mono">${c.biz_no||'—'}</div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">기장료</div>
+      <div class="drawer-val mono" style="color:var(--accent);font-size:16px">${fmt(c.fee)}원</div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">담당 직원</div>
+      <div class="drawer-val">${staff?`<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:20px;height:20px;border-radius:50%;background:${staff.color}22;color:${staff.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${staff.name[0]}</span>${staff.name}</span>`:'<span style="color:var(--dim)">미지정</span>'}</div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">연락처</div>
+      <div class="drawer-val mono">${c.phone||'—'}</div>
+    </div>
+    ${(c.hometax_id||c.karinara_id)?`<div class="drawer-sep">
+      ${c.hometax_id?`<div class="drawer-row"><div class="drawer-lbl">홈택스 ID</div><div class="drawer-val mono">${c.hometax_id}</div></div>`:''}
+      ${c.karinara_id?`<div class="drawer-row"><div class="drawer-lbl">경리나라 ID</div><div class="drawer-val mono">${c.karinara_id}</div></div>`:''}
+    </div>`:''}
+    <div class="drawer-sep">
+      <div class="drawer-lbl" style="margin-bottom:6px">메모</div>
+      <div style="font-size:13.5px;color:${c.note?'var(--text)':'var(--dim)'};line-height:1.7;white-space:pre-wrap;background:var(--surface2);border-radius:var(--r8);padding:10px 12px;min-height:60px">${c.note||'메모 없음'}</div>
+    </div>
+    <div class="drawer-sep" style="flex-direction:row;gap:8px">
+      <button class="btn btn-ghost btn-sm btn-edit-only" style="flex:1" onclick="closeDrawer();openCM('${c.id}')">수정</button>
+      <button class="btn btn-danger btn-sm btn-edit-only" style="flex:1" onclick="closeDrawer();delC('${c.id}')">삭제</button>
+    </div>`;
+  document.getElementById('client-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('client-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
 }
 
 // ─── UTILS ───────────────────────────────────────
