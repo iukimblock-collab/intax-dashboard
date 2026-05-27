@@ -152,15 +152,20 @@ try {
 
             "/verify-status" {
                 # ── 국세청 사업자 상태 조회 API ──────────────────────
-                $envFile = Join-Path $Root ".env"
-                $ntsKey  = $null
-                if (Test-Path $envFile) {
-                    (Get-Content $envFile -Encoding UTF8) | ForEach-Object {
-                        if ($_ -match "^NTS_API_KEY=(.+)") { $ntsKey = $Matches[1].Trim() }
+                # .env 및 .env(hometax).txt 순서로 NTS_API_KEY 탐색
+                $ntsKey = $null
+                @(".env", ".env(hometax).txt") | ForEach-Object {
+                    if (-not $ntsKey) {
+                        $f = Join-Path $Root $_
+                        if (Test-Path $f) {
+                            (Get-Content $f -Encoding UTF8) | ForEach-Object {
+                                if ($_ -match "^NTS_API_KEY=(.+)") { $ntsKey = $Matches[1].Trim() }
+                            }
+                        }
                     }
                 }
                 if (-not $ntsKey) {
-                    Send-Json $ctx @{ status="error"; message=".env 파일에 NTS_API_KEY가 없습니다. data.go.kr에서 무료 키를 발급받아 추가하세요." } 400
+                    Send-Json $ctx @{ status="error"; message=".env 또는 .env(hometax).txt 파일에 NTS_API_KEY가 없습니다." } 400
                     break
                 }
 
