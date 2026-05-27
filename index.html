@@ -228,6 +228,12 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
   /* 햄버거 & 사이드바 오버레이 유지 (로그아웃용) */
   #menu-btn{display:flex}
   #sidebar.mob-open{display:flex!important;position:fixed;left:0;top:0;bottom:0;width:224px;z-index:900;box-shadow:8px 0 32px rgba(0,0,0,.5)}
+  /* 사이드바 열렸을 때 960px 규칙으로 숨겨진 텍스트 복원 */
+  #sidebar.mob-open .nav-item span{display:inline}
+  #sidebar.mob-open .nav-item svg{margin:0}
+  #sidebar.mob-open .nav-label{display:block}
+  #sidebar.mob-open .logo-sub{display:block}
+  #sidebar.mob-open .av-name{display:block}
   #mob-overlay.open{display:block}
   /* 하단 내비게이션: safe-area 포함해 콘텐츠 영역이 항상 --mob-nav 높이 확보 */
   #bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:calc(var(--mob-nav) + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--border2);z-index:800;padding-bottom:env(safe-area-inset-bottom,0px);align-items:flex-start}
