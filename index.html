@@ -217,7 +217,8 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 #menu-btn:hover{color:var(--text);background:var(--surface2)}
 #mob-overlay{display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.55)}
 #bottom-nav{display:none}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:10.5px;font-weight:500;cursor:pointer;padding-top:4px;-webkit-tap-highlight-color:transparent;transition:color .15s;user-select:none}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;padding-top:4px;-webkit-tap-highlight-color:transparent;transition:color .15s;user-select:none}
+.bnav-item span{display:block;line-height:1.2}
 .bnav-item svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;opacity:.65;transition:opacity .15s}
 .bnav-item.active{color:var(--accent)}.bnav-item.active svg{opacity:1}
 @keyframes mSlideUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
@@ -228,10 +229,10 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
   #menu-btn{display:flex}
   #sidebar.mob-open{display:flex!important;position:fixed;left:0;top:0;bottom:0;width:224px;z-index:900;box-shadow:8px 0 32px rgba(0,0,0,.5)}
   #mob-overlay.open{display:block}
-  /* 하단 내비게이션 */
-  #bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:var(--mob-nav);background:var(--surface);border-top:1px solid var(--border2);z-index:800;padding-bottom:env(safe-area-inset-bottom,0px)}
-  /* 페이지 뷰: 하단 내비 가림 방지 */
-  #page-view{padding:14px 14px calc(var(--mob-nav) + 14px);gap:14px}
+  /* 하단 내비게이션: safe-area 포함해 콘텐츠 영역이 항상 --mob-nav 높이 확보 */
+  #bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:calc(var(--mob-nav) + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--border2);z-index:800;padding-bottom:env(safe-area-inset-bottom,0px);align-items:flex-start}
+  /* 페이지 뷰: 하단 내비 + safe-area 가림 방지 */
+  #page-view{padding:14px 14px calc(var(--mob-nav) + env(safe-area-inset-bottom,0px) + 14px);gap:14px}
   /* 상단 바 간소화 */
   .tb-sep,.tb-bread{display:none}
   #topbar{padding:0 14px;gap:10px}
@@ -248,9 +249,11 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
   #page-clients .tbl-panel{display:block}
   #page-clients .tbl-panel .tbl-wrap{max-height:62vh!important}
   /* 거래처 드로어 → 하단 시트 */
-  #client-drawer{width:100%;height:82vh;top:auto;bottom:var(--mob-nav);transform:translateY(110%);border-left:none;border-top:1px solid var(--border2);border-radius:var(--r16) var(--r16) 0 0}
+  #client-drawer{width:100%;height:82vh;top:auto;bottom:calc(var(--mob-nav) + env(safe-area-inset-bottom,0px));transform:translateY(110%);border-left:none;border-top:1px solid var(--border2);border-radius:var(--r16) var(--r16) 0 0}
   #client-drawer.open{transform:translateY(0)}
-  #drawer-overlay{bottom:var(--mob-nav)}
+  #drawer-overlay{bottom:calc(var(--mob-nav) + env(safe-area-inset-bottom,0px))}
+  /* CSV / 홈택스 가져오기 버튼: 모바일에서 숨김 */
+  #btn-export,#btn-htx-import{display:none!important}
   /* 모달 → 하단 시트 */
   .modal{width:100%!important;max-width:100%!important;border-radius:var(--r16) var(--r16) 0 0;max-height:92vh;margin:0;animation:mSlideUp .22s ease}
   #modal-overlay{align-items:flex-end;padding:0}
