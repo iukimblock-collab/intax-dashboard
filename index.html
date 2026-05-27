@@ -1332,16 +1332,8 @@ function openCM(id){
       <div class="form-group"><div class="form-label">기장료 (원)</div><input class="form-input" type="number" id="m-fee" value="${c.fee||''}" placeholder="150000"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><div class="form-label">CMS 여부</div><select class="form-select" id="m-cms"><option value="Y" ${c.cms==='Y'?'selected':''}>적용</option><option value="N" ${c.cms==='N'?'selected':''}>미적용</option></select></div>
-      <div class="form-group"><div class="form-label">CMS 납부상태</div><select class="form-select" id="m-cmss"><option value="납부" ${c.cms_status==='납부'?'selected':''}>납부</option><option value="미납" ${c.cms_status==='미납'?'selected':''}>미납</option><option value="체납" ${c.cms_status==='체납'?'selected':''}>체납</option></select></div>
-    </div>
-    <div class="form-row">
       <div class="form-group"><div class="form-label">담당 직원</div><select class="form-select" id="m-staff"><option value="">미지정</option>${so}</select></div>
       <div class="form-group"><div class="form-label">연락처</div><input class="form-input" id="m-phone" value="${c.phone||''}" placeholder="010-0000-0000"/></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><div class="form-label">홈택스 ID</div><input class="form-input" id="m-htx" value="${c.hometax_id||''}"/></div>
-      <div class="form-group"><div class="form-label">경리나라 ID</div><input class="form-input" id="m-kar" value="${c.karinara_id||''}"/></div>
     </div>
     <div class="form-group"><div class="form-label">메모</div><textarea class="form-textarea" id="m-note">${c.note||''}</textarea></div>`;
   document.getElementById('m-confirm').onclick=saveC;
@@ -1350,7 +1342,8 @@ function openCM(id){
 
 async function saveC(){
   const name=gv('m-name'); if(!name){alert('업체명을 입력해 주세요.');return;}
-  const obj={id:EID||('c'+Date.now()),name,div:gv('m-div')||'기장',biz_no:gv('m-biz'),type:gv('m-type'),status:gv('m-status'),size:gv('m-size'),sector:gv('m-sector'),fee:Number(gv('m-fee'))||0,cms:gv('m-cms'),cms_status:gv('m-cmss'),staff_id:gv('m-staff'),phone:gv('m-phone'),hometax_id:gv('m-htx'),karinara_id:gv('m-kar'),note:gv('m-note')};
+  const base=EID?{...DB.clients.find(x=>x.id===EID)}:{cms:'N',cms_status:'미납',hometax_id:'',karinara_id:''};
+  const obj={...base,id:EID||('c'+Date.now()),name,div:gv('m-div')||'기장',biz_no:gv('m-biz'),type:gv('m-type'),status:gv('m-status'),size:gv('m-size'),sector:gv('m-sector'),fee:Number(gv('m-fee'))||0,staff_id:gv('m-staff'),phone:gv('m-phone'),note:gv('m-note')};
   if(EID){const i=DB.clients.findIndex(x=>x.id===EID);DB.clients[i]=obj;}else DB.clients.push(obj);
   await save(); closeModal(); render('clients');
   showToast(EID?'거래처가 수정됐습니다.':'거래처가 등록됐습니다.','green');
