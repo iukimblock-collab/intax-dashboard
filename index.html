@@ -254,7 +254,7 @@ tbody tr.cl-row{cursor:pointer}
     <button class="login-btn" style="background:transparent;border:1px solid var(--border2);color:var(--muted);margin-top:8px" onclick="showRegister()">계정 생성</button>
     <div class="login-hint">
       대표 계정: <b>김인욱</b> / <b>1234</b><br/>
-      직원 계정은 설정에서 추가 후 사용하세요
+      직원 계정은 직원 현황에서 추가 후 사용하세요
     </div>
   </div>
 
@@ -307,11 +307,6 @@ tbody tr.cl-row{cursor:pointer}
     <div class="nav-item" data-page="notices">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.4 2 2 0 0 1 3.62 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.9a16 16 0 0 0 6.1 6.09l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       <span>안내문 발송</span>
-    </div>
-    <div class="nav-label">시스템</div>
-    <div class="nav-item" data-page="settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span>설정 / 권한</span>
     </div>
   </div>
   <div id="sidebar-foot">
@@ -393,6 +388,18 @@ tbody tr.cl-row{cursor:pointer}
           <span id="dash-htx-badge" class="tag tag-gray">확인 중</span>
         </div>
         <span id="dash-htx-time" style="font-size:12px;color:var(--muted);font-family:var(--mono)"></span>
+      </div>
+      <!-- 시스템 데이터 관리 (대표만) -->
+      <div class="role-boss-only" style="flex-direction:column;gap:0">
+        <div class="sh"><span class="sh-title">시스템 데이터 관리</span></div>
+        <div class="card">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="exportJSON()">↓ 전체 백업 (JSON)</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('imp-file').click()">↑ 데이터 가져오기</button>
+            <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importJSON(event)"/>
+            <button class="btn btn-danger" onclick="doReset()">전체 초기화</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -531,53 +538,25 @@ tbody tr.cl-row{cursor:pointer}
         <table><thead><tr><th>직원명</th><th>담당 거래처</th><th>기여 기장료</th><th>잔여 연차</th><th>상태</th><th>액션</th></tr></thead>
         <tbody id="st-tbody"></tbody></table>
       </div>
-    </div>
-
-    <!-- ── SETTINGS ── -->
-    <div class="page" id="page-settings">
-
-      <!-- 계정 관리 (대표만 표시) -->
+      <!-- 계정 관리 -->
       <div>
         <div class="sh">
           <span class="sh-title">계정 관리</span>
           <button class="btn btn-primary btn-sm role-boss-only" onclick="openAM()">+ 계정 추가</button>
         </div>
         <div class="card" style="padding:0;overflow:hidden">
-          <div class="tbl-wrap">
+          <div class="tbl-wrap" style="border:none;border-radius:0">
             <table>
               <thead>
-                <tr>
-                  <th>이름</th><th>권한</th><th>로그인 ID</th><th>상태</th><th style="min-width:220px">액션</th>
-                </tr>
+                <tr><th>이름</th><th>권한</th><th>로그인 ID</th><th>상태</th><th style="min-width:220px">액션</th></tr>
               </thead>
               <tbody id="acc-tbody"></tbody>
             </table>
           </div>
         </div>
       </div>
-
-      <div class="g2">
-        <div>
-          <div class="sh"><span class="sh-title">데이터 연동 상태</span></div>
-          <div class="card" style="display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;background:var(--surface2);border-radius:var(--r8)"><span>홈택스 가져오기</span><span class="tag" id="htx-status-tag">확인 중</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;background:var(--surface2);border-radius:var(--r8)"><span>구글드라이브 (거래처)</span><span class="tag tag-orange">미연결</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;background:var(--surface2);border-radius:var(--r8)"><span>CMS 청구 시스템</span><span class="tag tag-orange">미연결</span></div>
-          </div>
-        </div>
-        <div>
-          <div class="sh"><span class="sh-title">시스템 데이터 관리</span></div>
-          <div class="card">
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button class="btn btn-ghost" onclick="exportJSON()">↓ 전체 백업 (JSON)</button>
-              <button class="btn btn-ghost" onclick="document.getElementById('imp-file').click()">↑ 데이터 가져오기</button>
-              <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importJSON(event)"/>
-              <button class="btn btn-danger" onclick="doReset()">전체 초기화</button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
+
 
   </div>
 </div>
@@ -809,8 +788,7 @@ const PM={
   dashboard:{title:'대시보드',bread:'경영 현황 한눈에 보기',add:''},
   clients:{title:'거래처 현황',bread:'거래처 등록 및 조회',add:'+ 거래처 등록'},
   notices:{title:'안내문 발송',bread:'신고별 안내문 작성',add:''},
-  staff:{title:'직원 현황',bread:'직원 등록 및 실적 관리',add:''},
-  settings:{title:'설정 / 권한',bread:'시스템 설정',add:'+ 계정 추가'},
+  staff:{title:'직원 현황',bread:'직원 등록 및 실적 관리',add:'+ 직원 등록'},
 };
 
 function go(p){
@@ -832,7 +810,7 @@ function go(p){
 document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',()=>go(el.dataset.page)));
 document.getElementById('btn-add').addEventListener('click',()=>{
   if(CUR==='clients') openCM();
-  if(CUR==='settings') openAM();
+  if(CUR==='staff') openSM();
 });
 
 // ─── RENDER ──────────────────────────────────────
@@ -841,7 +819,6 @@ function render(p){
   if(p==='clients')   rClients();
   if(p==='notices')   rNotices();
   if(p==='staff')     rStaff();
-  if(p==='settings')  rSettings();
   document.getElementById('nav-badge-c').textContent=DB.clients.filter(c=>c.status==='정상').length;
 }
 
@@ -1129,9 +1106,9 @@ function rStaff(){
       </div>
     </div>`;
   });
-  rows.push(`<div class="staff-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:dashed;cursor:pointer;min-height:160px;gap:6px;text-align:center" onclick="go('settings')">
+  rows.push(`<div class="staff-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:dashed;cursor:pointer;min-height:160px;gap:6px;text-align:center" onclick="openSM()">
     <span class="tc-m" style="font-size:13.5px">+ 직원 추가</span>
-    <span style="font-size:11.5px;color:var(--dim)">설정 / 권한에서<br>계정을 등록하세요</span>
+    <span style="font-size:11.5px;color:var(--dim)">클릭하여<br>직원을 등록하세요</span>
   </div>`);
   cards.innerHTML=rows.join('');
 
@@ -1156,54 +1133,37 @@ function rStaff(){
       </div></td>
     </tr>`;
   }).join('')||'<tr><td colspan="6" class="empty">직원 없음</td></tr>';
-}
 
-// ─── SETTINGS ────────────────────────────────────
-function rSettings(){
+  // 계정 관리 테이블
   const isBoss=ME&&ME.role==='대표';
-  // 홈택스 동기화 상태 업데이트
-  const htxTag=document.getElementById('htx-status-tag');
-  if(htxTag){
-    const lastSync=DB.htxLastSync||null;
-    const hasHtxClients=DB.clients.some(c=>c.htx_synced);
-    if(lastSync){
-      const d=new Date(lastSync);
-      const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-      htxTag.className='tag tag-green';
-      htxTag.textContent='동기화됨 '+ds;
-    } else if(hasHtxClients){
-      htxTag.className='tag tag-green';
-      htxTag.textContent='연결됨';
-    } else {
-      htxTag.className='tag tag-orange';
-      htxTag.textContent='미동기화';
-    }
+  const atb=document.getElementById('acc-tbody');
+  if(atb){
+    atb.innerHTML=(DB.users||[]).map(u=>{
+      const isMe=ME&&u.id===ME.id;
+      const isBossAcc=u.role==='대표';
+      const linkedStaff=u.staff_id?DB.staff.find(x=>x.id===u.staff_id):null;
+      const staffStatusBadge=linkedStaff?`<span class="tag ${linkedStaff.status==='재직'?'tag-blue':'tag-red'}" style="margin-left:5px">${linkedStaff.status}</span>`:'';
+      return `<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="width:26px;height:26px;border-radius:50%;background:${isBossAcc?'var(--accent-a)':'var(--surface3)'};color:${isBossAcc?'var(--accent)':'var(--muted)'};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${u.name[0]}</span>
+            <span class="fw5">${u.name}</span>${isMe?'<span class="tag tag-green" style="font-size:10px;padding:1px 6px;margin-left:2px">나</span>':''}
+          </div>
+        </td>
+        <td><span class="tag ${isBossAcc?'tag-blue':'tag-gray'}">${u.role}</span></td>
+        <td class="mono tc-m" style="font-size:13px">${u.loginId||'—'}</td>
+        <td>${isMe?'<span class="tag tag-green">접속 중</span>':'<span class="tag tag-gray">오프라인</span>'}${!isBossAcc?staffStatusBadge:''}</td>
+        <td>${isBoss?`<div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">수정</button>
+            <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비밀번호 변경</button>
+            ${!isBossAcc?`<button class="btn btn-danger btn-sm" onclick="delA('${u.id}')">삭제</button>`:''}
+          </div>`:'—'}</td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="5" class="empty">계정 없음</td></tr>';
   }
-  const tb=document.getElementById('acc-tbody');
-  tb.innerHTML=(DB.users||[]).map(u=>{
-    const isMe=ME&&u.id===ME.id;
-    const isBossAcc=u.role==='대표';
-    const linkedStaff=u.staff_id?DB.staff.find(x=>x.id===u.staff_id):null;
-    const staffStatusBadge=linkedStaff?`<span class="tag ${linkedStaff.status==='재직'?'tag-blue':'tag-red'}" style="margin-left:5px">${linkedStaff.status}</span>`:'';
-    return `<tr>
-      <td>
-        <div style="display:flex;align-items:center;gap:7px">
-          <span style="width:26px;height:26px;border-radius:50%;background:${isBossAcc?'var(--accent-a)':'var(--surface3)'};color:${isBossAcc?'var(--accent)':'var(--muted)'};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${u.name[0]}</span>
-          <span class="fw5">${u.name}</span>${isMe?'<span class="tag tag-green" style="font-size:10px;padding:1px 6px;margin-left:2px">나</span>':''}
-        </div>
-      </td>
-      <td><span class="tag ${isBossAcc?'tag-blue':'tag-gray'}">${u.role}</span></td>
-      <td class="mono tc-m" style="font-size:13px">${u.loginId||'—'}</td>
-      <td>${isMe?'<span class="tag tag-green">접속 중</span>':'<span class="tag tag-gray">오프라인</span>'}${!isBossAcc?staffStatusBadge:''}</td>
-      <td>${isBoss?`<div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">수정</button>
-          <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비밀번호 변경</button>
-          ${!isBossAcc?`<button class="btn btn-danger btn-sm" onclick="delA('${u.id}')">삭제</button>`:''}
-        </div>`:'—'}</td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="5" class="empty">계정 없음</td></tr>';
   syncSidebar();
 }
+
 
 function syncSidebar(){
   const u=ME||(DB.users||[]).find(x=>x.role==='대표')||(DB.users||[])[0];
@@ -1406,7 +1366,7 @@ async function saveA(){
   }
   if(EID){const i=DB.users.findIndex(x=>x.id===EID);DB.users[i]=obj;if(ME&&ME.id===EID)ME=obj;}
   else DB.users.push(obj);
-  await save(); closeModal(); rSettings();
+  await save(); closeModal(); rStaff();
 }
 
 function openPwChange(id){
@@ -1437,7 +1397,7 @@ async function savePwChange(){
   u.pw=pw1;if(ME&&ME.id===EID)ME.pw=pw1;
   await save();closeModal();
   alert(u.name+' 계정의 비밀번호가 변경되었습니다.');
-  rSettings();
+  rStaff();
 }
 
 async function delA(id){
@@ -1449,7 +1409,7 @@ async function delA(id){
     if(s) s.status='퇴사';
   }
   DB.users=DB.users.filter(x=>x.id!==id);
-  await save();rSettings();
+  await save();rStaff();
 }
 
 // ─── MODAL ───────────────────────────────────────
