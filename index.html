@@ -1764,8 +1764,12 @@ async function doHometaxSync(){
       if(st.status==='done'){
         clearInterval(_htxPollTimer); _htxPollTimer=null;
         setLoading(false);
-        // GitHub에서 최신 데이터 반영
-        await tryRemoteSync();
+        // GitHub에서 최신 데이터 반영 (실패해도 로컬 완료 처리 계속)
+        try{ await tryRemoteSync(); }catch(ex){ /* 원격 동기화 실패 무시 */ }
+        // 동기화 완료 시각 저장 → rDash()가 즉시 타임스탬프 반영
+        if(!DB.meta) DB.meta={};
+        DB.meta.hometax_synced_at=new Date().toISOString();
+        save();
         render(CUR);
         badge.className='tag tag-green'; badge.textContent='동기화 완료';
         showToast('홈택스 동기화 완료 — 거래처 정보가 업데이트됐습니다.','green');
