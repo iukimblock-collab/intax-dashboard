@@ -524,10 +524,6 @@ tbody tr.cl-row{cursor:pointer}
           <div style="display:flex;align-items:center;gap:10px">
             <span id="f-cnt" class="f-cnt-text"></span>
             <button class="btn btn-ghost btn-sm" onclick="resetF()">초기화</button>
-            <button class="btn btn-ghost btn-sm" onclick="exportExcel()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-              엑셀 다운로드
-            </button>
           </div>
         </div>
         <!-- 홈택스 동기화 알림 -->
@@ -1141,7 +1137,6 @@ function rClients(){
     const cmp=typeof av==='number'?av-bv:av.localeCompare(bv,'ko');
     return clSort.dir==='asc'?cmp:-cmp;
   });
-  _clFiltered=list;
   // 정렬 인디케이터 업데이트
   ['div','name','fee','staff'].forEach(k=>{
     const el=document.getElementById('th-'+k);
@@ -1669,29 +1664,6 @@ function exportCSV(){
   DB.clients.forEach(c=>rows.push([c.type,c.name,c.biz_no,c.status,c.sector,c.size,c.fee,c.cms,c.cms_status,sn(c.staff_id),c.phone,c.hometax_id]));
   dl(new Blob(['\uFEFF'+rows.map(r=>r.map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),'intax-clients.csv');
 }
-function exportExcel(){
-  const cols=[
-    {h:'구분',     v:c=>c.div||'기장'},
-    {h:'유형',     v:c=>c.type},
-    {h:'업체명',   v:c=>c.name},
-    {h:'사업자번호',v:c=>c.biz_no},
-    {h:'상태',     v:c=>c.status},
-    {h:'업종',     v:c=>c.sector||''},
-    {h:'규모',     v:c=>c.size||''},
-    {h:'기장료(원)',v:c=>c.fee||0,  num:true},
-    {h:'담당직원', v:c=>sn(c.staff_id)},
-    {h:'연락처',   v:c=>c.phone||''},
-    {h:'홈택스ID', v:c=>c.hometax_id||''},
-    {h:'메모',     v:c=>c.note||''},
-  ];
-  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const hdr=cols.map(c=>`<th style="background:#4f7eff;color:#fff;font-weight:bold">${esc(c.h)}</th>`).join('');
-  const body=_clFiltered.map(c=>`<tr>${cols.map(col=>`<td${col.num?' style="mso-number-format:\'#\\,##0\'"':''}>${esc(col.v(c))}</td>`).join('')}</tr>`).join('');
-  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>거래처 현황</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1" style="border-collapse:collapse;font-family:맑은 고딕,sans-serif;font-size:11pt"><thead><tr>${hdr}</tr></thead><tbody>${body}</tbody></table></body></html>`;
-  const d=new Date();
-  const tag=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-  dl(new Blob(['﻿'+html],{type:'application/vnd.ms-excel;charset=utf-8'}),`INTAX_거래처현황_${tag}.xls`);
-}
 // ─── 홈택스 자동 동기화 ───────────────────────────────
 const _BRIDGE='http://localhost:19423';
 let _htxPollTimer=null;
@@ -2047,7 +2019,6 @@ document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',c
 
 // ─── CLIENT SORT ─────────────────────────────────
 let clSort={key:'div',dir:'asc'};
-let _clFiltered=[];
 function setSortCl(key){
   if(clSort.key===key) clSort.dir=clSort.dir==='asc'?'desc':'asc';
   else{clSort.key=key;clSort.dir='asc';}
