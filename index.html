@@ -808,9 +808,9 @@ async function init(){
     const _dummy=['김세무','이기장','박회계'];
     if(DB.staff&&DB.staff.some(s=>_dummy.includes(s.name))){
       const _real=[
-        {id:'s1',name:'강수민',rank:'세무사',leave:0,status:'재직',color:'#4f7eff'},
-        {id:'s2',name:'이지우',rank:'주임',leave:0,status:'재직',color:'#2ecfa8'},
-        {id:'s3',name:'김지민',rank:'사원',leave:0,status:'재직',color:'#ff7c4f'},
+        {id:'s1',name:'강수민',leave_used:0,status:'재직',color:'#4f7eff',join_date:'2023-12-04'},
+        {id:'s2',name:'이지우',leave_used:0,status:'재직',color:'#2ecfa8',join_date:'2024-11-25'},
+        {id:'s3',name:'김지민',leave_used:0,status:'재직',color:'#ff7c4f',join_date:'2025-09-08'},
       ];
       // 기존 직원 정보에서 커스텀 필드(담당 건수 등)는 유지하고 이름/직급만 교체
       DB.staff=_real.map(r=>{const old=DB.staff.find(s=>s.id===r.id);return old?{...old,...r}:r;});
@@ -834,6 +834,12 @@ async function init(){
     });
     // 직원 비밀번호 0000 → 1234 마이그레이션
     (DB.users||[]).filter(u=>u.role==='직원'&&u.pw==='0000').forEach(u=>{u.pw='1234';});
+    // 입사일 초기값 반영 (미설정 시에만)
+    const _joinMap={s1:'2023-12-04',s2:'2024-11-25',s3:'2025-09-08'};
+    DB.staff.forEach(s=>{
+      if(_joinMap[s.id]&&!s.join_date) s.join_date=_joinMap[s.id];
+      if(s.leave_used===undefined) s.leave_used=0;
+    });
     applyStaffMap();
     // 사업자번호 기반 법인/개인 자동 보정
     DB.clients.forEach(c=>{if(c.biz_no) c.type=bizType(c.biz_no);});
@@ -924,9 +930,9 @@ document.addEventListener('keydown',e=>{
 
 async function seed(){
   DB.staff=[
-    {id:'s1',name:'강수민',leave:0,status:'재직',color:'#4f7eff'},
-    {id:'s2',name:'이지우',leave:0,status:'재직',color:'#2ecfa8'},
-    {id:'s3',name:'김지민',leave:0,status:'재직',color:'#ff7c4f'},
+    {id:'s1',name:'강수민',leave_used:0,status:'재직',color:'#4f7eff',join_date:'2023-12-04'},
+    {id:'s2',name:'이지우',leave_used:0,status:'재직',color:'#2ecfa8',join_date:'2024-11-25'},
+    {id:'s3',name:'김지민',leave_used:0,status:'재직',color:'#ff7c4f',join_date:'2025-09-08'},
   ];
   DB.users=[
     {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
@@ -1318,7 +1324,22 @@ function rStaff(){
         <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 11px"><div style="font-size:11.5px;color:var(--muted);margin-bottom:2px">담당 거래처</div><div class="mono fw5" style="font-size:12.5px">법인 ${cntCorp} / 개인 ${cntInd}</div></div>
         <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 11px"><div style="font-size:11.5px;color:var(--muted);margin-bottom:2px">기여 기장료</div><div class="mono fw5" style="font-size:13px">${fmt(fee)}원</div></div>
       </div>
-      <div style="margin-top:9px;font-size:12.5px;color:var(--muted)">잔여 연차 <span style="color:var(--text)">${s.leave}일</span>${s.join_date?` &nbsp;·&nbsp; 입사일 <span style="color:var(--text)">${s.join_date}</span>`:''}</div>
+      <div style="margin-top:9px;display:flex;gap:6px">
+        ${(()=>{const acc=calcAccruedLeave(s.join_date);const used=s.leave_used||0;const rem=acc-used;const rc=rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)';return`
+        <div style="flex:1;background:var(--surface2);border-radius:var(--r8);padding:7px 10px">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px">발생 연차</div>
+          <div class="mono fw5" style="font-size:12.5px">${acc}일</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:var(--r8);padding:7px 10px">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px">사용 연차</div>
+          <div class="mono fw5" style="font-size:12.5px">${used}일</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:var(--r8);padding:7px 10px;border:1px solid rgba(255,255,255,.06)">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px">잔여 연차</div>
+          <div class="mono fw5" style="font-size:12.5px;color:${rc}">${rem}일</div>
+        </div>`;})()}
+      </div>
+      ${s.join_date?`<div style="margin-top:6px;font-size:11.5px;color:var(--muted)">입사일 <span style="color:var(--text)">${s.join_date}</span></div>`:''}
     </div>`;
   });
   cards.innerHTML=rows.join('');
@@ -1370,7 +1391,7 @@ function rStaff(){
         <td>법인 ${cntCorp} / 개인 ${cntInd}</td>
         <td class="mono">${fmt(fee)}원</td>
         <td>${s.join_date||'—'}</td>
-        <td>${s.leave}일</td>
+        <td>${(()=>{const acc=calcAccruedLeave(s.join_date);const rem=acc-(s.leave_used||0);return`<span style="color:${rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)'}">${rem}일</span> <span style="color:var(--dim);font-size:11.5px">(발생 ${acc}일 / 사용 ${s.leave_used||0}일)</span>`})()}</td>
         <td><span class="tag ${s.status==='재직'?'tag-green':'tag-red'}">${s.status}</span></td>
         <td>${isBoss?`<div style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="openSM('${s.id}')">직원 수정</button>
@@ -1460,8 +1481,8 @@ function openSM(id){
         ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">이름은 계정 수정에서 변경하세요</div>`:''}
       </div>
       <div class="form-group">
-        <div class="form-label">잔여 연차 (일)</div>
-        <input class="form-input" type="number" id="m-lv" value="${s.leave??15}"/>
+        <div class="form-label">연차 현황</div>
+        <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 12px;font-size:12.5px;color:var(--muted)">${(()=>{const acc=calcAccruedLeave(s.join_date);const used=s.leave_used||0;const rem=acc-used;return`발생 ${acc}일 · 사용 ${used}일 · <span style="color:${rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)'}">잔여 ${rem}일</span>`;})()}<br/><span style="font-size:11px">사용 연차 입력은 계정 수정에서 변경하세요</span></div>
       </div>
     </div>
     <div class="form-row">
@@ -1494,7 +1515,7 @@ function pickCol(el,col){
 async function saveS(){
   const name=gv('m-sn'); if(!name){alert('이름을 입력해 주세요.');return;}
   const existing=EID?DB.staff.find(x=>x.id===EID):{};
-  const obj={...existing,id:EID||('s'+Date.now()),name,leave:Number(gv('m-lv'))||0,status:gv('m-ss'),color:document.getElementById('m-col').value,join_date:gv('m-join')||''};
+  const obj={...existing,id:EID||('s'+Date.now()),name,status:gv('m-ss'),color:document.getElementById('m-col').value,join_date:gv('m-join')||''};
   if(EID){const i=DB.staff.findIndex(x=>x.id===EID);DB.staff[i]=obj;}else DB.staff.push(obj);
   await save(); closeModal(); render('staff');
 }
@@ -1515,7 +1536,7 @@ function syncStaffFromUser(u){
   } else {
     const used=DB.staff.map(s=>s.color);
     const col=COLS.find(c=>!used.includes(c))||COLS[DB.staff.length%COLS.length];
-    const ns={id:'s'+Date.now(),name:u.name,rank:'',leave:15,status:'재직',color:col};
+    const ns={id:'s'+Date.now(),name:u.name,rank:'',leave_used:0,status:'재직',color:col};
     DB.staff.push(ns);
     u.staff_id=ns.id;
   }
@@ -1555,6 +1576,16 @@ function openAM(id){
         <div class="form-label">입사일</div>
         <input class="form-input" type="date" id="m-ajoin" value="${linkedStaff?.join_date||''}"/>
       </div>
+    </div>
+    <div class="form-row" id="acc-leave-row" style="${isStaff?'':'display:none'}">
+      <div class="form-group">
+        <div class="form-label">사용한 연차 (일)</div>
+        <input class="form-input" type="number" min="0" id="m-aleave" value="${linkedStaff?.leave_used??0}"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">연차 현황 (자동 계산)</div>
+        <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 12px;font-size:12.5px;color:var(--muted)">${(()=>{if(!linkedStaff)return'입사일 저장 후 확인 가능';const acc=calcAccruedLeave(linkedStaff.join_date);const used=linkedStaff.leave_used||0;const rem=acc-used;return`발생 ${acc}일 · 사용 ${used}일 · <span style="color:${rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)'}">잔여 ${rem}일</span>`;})()}</div>
+      </div>
     </div>`;
   document.getElementById('m-confirm').textContent='저장';
   document.getElementById('m-confirm').onclick=saveA;
@@ -1562,8 +1593,10 @@ function openAM(id){
 }
 
 function toggleAccStatusField(role){
-  const row=document.getElementById('acc-status-row');
-  if(row) row.style.display=role==='직원'?'':'none';
+  ['acc-status-row','acc-leave-row'].forEach(id=>{
+    const row=document.getElementById(id);
+    if(row) row.style.display=role==='직원'?'':'none';
+  });
 }
 
 async function saveA(){
@@ -1589,6 +1622,7 @@ async function saveA(){
     if(staffEntry){
       const st=gv('m-ust'); if(st) staffEntry.status=st;
       const jd=gv('m-ajoin'); if(jd!==undefined) staffEntry.join_date=jd;
+      const lu=gv('m-aleave'); if(lu!==undefined&&lu!=='') staffEntry.leave_used=Math.max(0,Number(lu));
     }
   } else if(existing?.role==='직원'&&existing.staff_id){
     // 직원 → 대표 변경 시: 연결된 staff 퇴사 처리
@@ -2079,6 +2113,24 @@ function closeDrawer(){
 // ─── UTILS ───────────────────────────────────────
 function gv(id){return document.getElementById(id)?.value||'';}
 function fmt(n){return Math.round(n||0).toLocaleString('ko-KR');}
+// 근로기준법 연차 발생 계산 (입사일 기준)
+function calcAccruedLeave(joinDateStr){
+  if(!joinDateStr) return 0;
+  const join=new Date(joinDateStr);
+  const today=new Date();
+  if(isNaN(join)) return 0;
+  let years=today.getFullYear()-join.getFullYear();
+  const md=today.getMonth()-join.getMonth();
+  if(md<0||(md===0&&today.getDate()<join.getDate())) years--;
+  if(years<1){
+    // 1년 미만: 완성된 개월 수만큼 1일씩 (최대 11일)
+    let months=(today.getFullYear()-join.getFullYear())*12+(today.getMonth()-join.getMonth());
+    if(today.getDate()<join.getDate()) months--;
+    return Math.min(Math.max(months,0),11);
+  }
+  // 1년 이상: 15일 기본, 3년차부터 2년마다 +1일 (최대 25일)
+  return Math.min(15+Math.floor((years-1)/2),25);
+}
 function sn(id){return DB.staff.find(s=>s.id===id)?.name||'미지정';}
 // 사업자번호 중간 2자리(80~89 → 법인, 나머지 → 개인)
 function bizType(biz_no){const d=(biz_no||'').replace(/[^0-9]/g,'');if(d.length<5)return '개인';const m=parseInt(d.substring(3,5),10);return(m>=80&&m<=89)?'법인':'개인';}
