@@ -1,7 +1,33 @@
 ﻿{
-    "exported_at":  "2026-05-26T12:32:31",
+    "exported_at":  "2026-05-28T12:26:15",
     "source":  "hometax",
     "clients":  [
+                    {
+                        "biz_no":  "4808104050",
+                        "name":  "주식회사 설연",
+                        "type":  "개인",
+                        "div":  "기장",
+                        "sector":  "20260527",
+                        "size":  "개인사업자",
+                        "status":  "정상",
+                        "fee":  0,
+                        "phone":  "",
+                        "hometax_id":  "",
+                        "note":  "홈택스 가져오기"
+                    },
+                    {
+                        "biz_no":  "6567600322",
+                        "name":  "에이치앤엠(H\u0026M)",
+                        "type":  "개인",
+                        "div":  "기장",
+                        "sector":  "20260526",
+                        "size":  "개인사업자",
+                        "status":  "정상",
+                        "fee":  0,
+                        "phone":  "",
+                        "hometax_id":  "",
+                        "note":  "홈택스 가져오기"
+                    },
                     {
                         "biz_no":  "1720502915",
                         "name":  "당근보험",
