@@ -283,6 +283,13 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 .th-sort.s-asc::after{content:' ▲';font-size:9px;color:var(--accent);opacity:1}
 .th-sort.s-desc::after{content:' ▼';font-size:9px;color:var(--accent);opacity:1}
 tbody tr.cl-row{cursor:pointer}
+/* ── 거래처 현황 모바일 전용 액션 바 ── */
+#cl-mob-bar{display:none;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border2);background:var(--surface);flex-shrink:0}
+@media(max-width:640px){
+  #main:has(#page-clients.active) #cl-mob-bar{display:flex}
+  #main:has(#page-clients.active) #topbar #btn-verify-status,
+  #main:has(#page-clients.active) #topbar #btn-add{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -380,6 +387,15 @@ tbody tr.cl-row{cursor:pointer}
       <button class="btn btn-primary btn-sm" id="btn-add" style="display:none"></button>
     </div>
   </header>
+
+  <!-- 거래처 현황 모바일 전용 액션 바 -->
+  <div id="cl-mob-bar">
+    <button class="btn btn-ghost btn-sm role-boss-only" onclick="doVerifyStatus()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      상태 검증
+    </button>
+    <button class="btn btn-primary btn-sm role-boss-only" onclick="openCM()">+ 거래처 등록</button>
+  </div>
 
   <div id="page-view">
 
