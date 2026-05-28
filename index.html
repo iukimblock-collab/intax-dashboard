@@ -1113,7 +1113,7 @@ function rClients(){
   // populate selects
   const fSt=document.getElementById('f-staff');
   const ss=fSt.value;
-  fSt.innerHTML='<option value="">담당자 전체</option>'+DB.staff.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  fSt.innerHTML='<option value="">담당자 전체</option>'+DB.staff.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')+'<option value="__none__">미지정</option>';
   fSt.value=ss;
 
   let list=[...DB.clients];
@@ -1129,7 +1129,8 @@ function rClients(){
   if(ft)     list=list.filter(c=>c.type===ft);
   if(fs)     list=list.filter(c=>c.status===fs);
   if(ffee!==''){const FEE_TESTS=[c=>c.fee<=100000,c=>c.fee>100000&&c.fee<=200000,c=>c.fee>200000&&c.fee<=300000,c=>c.fee>300000];list=list.filter(FEE_TESTS[Number(ffee)]);}
-  if(fst)    list=list.filter(c=>c.staff_id===fst);
+  if(fst==='__none__') list=list.filter(c=>!c.staff_id);
+  else if(fst)         list=list.filter(c=>c.staff_id===fst);
   if(kw)     list=list.filter(c=>c.name.toLowerCase().includes(kw));
   if(kbiz)   list=list.filter(c=>c.biz_no.toLowerCase().includes(kbiz));
   if(kphone) list=list.filter(c=>c.phone.toLowerCase().includes(kphone));
