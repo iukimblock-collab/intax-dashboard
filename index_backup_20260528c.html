@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>INTAX Tax Accounting Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0d0f14;--surface:#141720;--surface2:#1c2030;--surface3:#252a3a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.15);
+  --text:#e8eaf0;--muted:#7b829a;--dim:#3e4460;
+  --accent:#4f7eff;--accent-a:rgba(79,126,255,0.13);
+  --green:#2ecfa8;--green-a:rgba(46,207,168,0.13);
+  --orange:#ff7c4f;--orange-a:rgba(255,124,79,0.13);
+  --yellow:#ffb830;--yellow-a:rgba(255,184,48,0.13);
+  --red:#f05c5c;--red-a:rgba(240,92,92,0.13);
+  --font:'Noto Sans KR',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --r4:4px;--r8:8px;--r12:12px;--r16:16px;
+  --sw:224px;--hh:54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14.5px;line-height:1.6}
+button,input,select,textarea{font-family:var(--font)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+#shell{display:flex;height:100vh;overflow:hidden}
+#sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+#logo{padding:18px 20px 14px;border-bottom:1px solid var(--border)}
+.logo-mark{font-family:var(--mono);font-size:49px;font-weight:500;color:#c0c6d4;letter-spacing:-.5px}
+.logo-sub{font-size:11.5px;color:#8a9ab0;margin-top:1px}
+#logo:hover .logo-mark{color:var(--accent)}
+#logo:hover .logo-sub{color:var(--muted)}
+#nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-label{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;padding:10px 18px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 18px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;border-left:2px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-a);color:var(--accent);border-left-color:var(--accent)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75}
+.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;font-size:11px;font-family:var(--mono);background:var(--surface3);padding:1px 6px;border-radius:20px;color:var(--muted)}
+#sidebar-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.s-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-a);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0}
+.av-name{font-size:13.5px;font-weight:700}
+.av-role{font-size:11.5px;font-weight:700;color:var(--muted)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{height:var(--hh);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0}
+#page-title{font-size:15.5px;font-weight:500}
+.tb-sep{color:var(--dim);font-size:17px}
+.tb-bread{font-size:12.5px;color:var(--muted)}
+#tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-search{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);padding:5px 11px;font-size:13.5px;color:var(--text);width:190px;outline:none;transition:border .15s}
+.tb-search::placeholder{color:var(--dim)}
+.tb-search:focus{border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r8);font-size:13.5px;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-danger{background:var(--red-a);color:var(--red);border:1px solid transparent}
+.btn-danger:hover{border-color:var(--red)}
+.btn-sm{padding:4px 10px;font-size:12.5px}
+#page-view{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:22px}
+.page{display:none;flex-direction:column;gap:20px}
+.page.active{display:flex;animation:fadeIn .2s ease}
+/* 거래처 현황: 표가 뷰포트 하단까지 채우도록 */
+#page-view:has(#page-clients.active){overflow-y:hidden}
+#page-clients.active{flex:1;min-height:0;overflow:hidden}
+#page-clients .tbl-panel{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#page-clients .tbl-panel .tbl-wrap{flex:1;overflow-y:auto;max-height:none!important}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sh-title{font-size:12px;font-weight:500;letter-spacing:.07em;color:var(--muted);text-transform:uppercase}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:18px 20px}
+.card-label{font-size:12.5px;color:var(--muted);margin-bottom:5px}
+.card-val{font-family:var(--mono);font-size:25px;font-weight:500;letter-spacing:-1px}
+.card-chg{font-size:12px;margin-top:4px;color:var(--muted)}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r12);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead th{text-align:left;padding:10px 14px;font-size:11.5px;font-weight:500;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:10}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:nth-child(even){background:rgba(255,255,255,.018)}
+tbody tr:hover{background:var(--surface3)!important}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:500}
+.tag-blue{background:var(--accent-a);color:var(--accent)}
+.tag-green{background:var(--green-a);color:var(--green)}
+.tag-orange{background:var(--orange-a);color:var(--orange)}
+.tag-red{background:var(--red-a);color:var(--red)}
+.tag-yellow{background:var(--yellow-a);color:var(--yellow)}
+.tag-gray{background:var(--surface3);color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.dg{background:var(--green)}
+.dr{background:var(--red)}
+.dy{background:var(--yellow)}
+.dm{background:var(--muted)}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-label{font-size:12.5px;color:var(--muted);font-weight:500}
+.form-input,.form-select,.form-textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);padding:7px 11px;font-size:14px;color:var(--text);outline:none;transition:border .15s;font-family:var(--font);width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--dim)}
+.form-textarea{resize:vertical;min-height:90px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center}
+#modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r16);padding:24px;width:min(620px,94vw);max-height:85vh;overflow-y:auto;animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:500}
+.modal-close{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:19px;padding:2px 6px}
+.modal-close:hover{color:var(--text)}
+.modal-ft{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r12)}
+.filter-bar select,.filter-bar input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);padding:5px 9px;font-size:13px;color:var(--text);outline:none}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--accent)}
+.filter-bar input::placeholder{color:var(--dim)}
+.empty{text-align:center;padding:32px;color:var(--dim);font-size:13.5px}
+.mono{font-family:var(--mono);font-size:13px}
+.fw5{font-weight:500}
+.tc-a{color:var(--accent)}
+.tc-g{color:var(--green)}
+.tc-o{color:var(--orange)}
+.tc-r{color:var(--red)}
+.tc-y{color:var(--yellow)}
+.tc-m{color:var(--muted)}
+.notice-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.n-icon{width:36px;height:36px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:700}
+.staff-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:16px 18px}
+.tabs{display:flex;gap:2px;background:var(--surface2);border-radius:var(--r8);padding:3px}
+.tab{padding:5px 14px;border-radius:6px;font-size:13.5px;cursor:pointer;color:var(--muted);transition:all .15s;border:none;background:transparent}
+.tab.active{background:var(--surface);color:var(--text)}
+@media(max-width:960px){
+  :root{--sw:60px}
+  .logo-sub,.nav-label,.nav-badge,.av-name,.av-role,.nav-item span{display:none}
+  .nav-item svg{margin:auto}
+  .logo-mark{font-size:14px}
+  .g4{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  :root{--sw:0px;--mob-nav:58px}
+  #sidebar{display:none}
+  .g3,.g4{grid-template-columns:repeat(2,1fr)}
+  .g2{grid-template-columns:1fr}
+  .form-row,.form-row3{grid-template-columns:1fr}
+}
+.th-filter:hover{background:var(--surface3)!important;color:var(--text)!important}
+.th-filter.f-active{color:var(--accent)!important;background:var(--accent-a)!important}
+.f-ind{font-size:9px;opacity:.7;margin-left:2px}
+.f-ind.on{color:var(--accent);opacity:1}
+.sort-ind{font-size:10px;color:var(--muted);margin-left:1px}
+#f-popup input:focus,#f-popup select:focus{border-color:var(--accent)}
+#f-popup label{font-size:11.5px;color:var(--muted);display:block;margin-bottom:5px}
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;align-items:center;justify-content:center}
+#login-screen.hidden{display:none}
+.login-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r16);padding:40px 44px;width:min(420px,92vw);animation:mIn .25s ease}
+.login-logo{font-family:var(--mono);font-size:33px;font-weight:500;color:#c0c6d4;letter-spacing:-1px;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px}
+.login-err{font-size:12.5px;color:var(--red);margin-bottom:12px;min-height:18px}
+.login-box .form-label{font-size:12.5px;color:var(--muted);margin-bottom:5px;display:block;font-weight:500}
+.login-box input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);padding:9px 13px;font-size:14px;color:var(--text);outline:none;width:100%;transition:border .15s;font-family:var(--font);margin-bottom:14px}
+.login-box input:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--r8);font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;font-family:var(--font);transition:opacity .15s}
+.login-btn:hover{opacity:.85}
+.login-hint{font-size:11.5px;color:var(--dim);margin-top:16px;text-align:center;line-height:1.7}
+/* 권한별 숨김 */
+.role-boss-only{display:none}
+body.role-boss .role-boss-only{display:flex}
+.role-boss-block{display:none}
+body.role-boss .role-boss-block{display:block}
+body.role-boss .btn-edit-only{pointer-events:auto;opacity:1}
+body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-allowed}
+/* 로그아웃 버튼 */
+#logout-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:var(--r8);font-size:12.5px;color:var(--muted);cursor:pointer;border:1px solid var(--border);background:transparent;margin-top:auto;width:calc(100% - 32px);margin:8px 16px}
+#logout-btn:hover{background:var(--surface2);color:var(--text)}
+/* ── 테이블 패널 (필터바 + 표 통합 컨테이너) ── */
+.tbl-panel{border:1px solid var(--border);border-radius:var(--r12);overflow:hidden}
+.tbl-panel .tbl-wrap{border:none;border-radius:0}
+/* ── 스티키 헤더: 거래처 페이지 테이블 (fees는 flex로 처리) ── */
+#page-clients .tbl-wrap{max-height:calc(100vh - var(--hh) - 220px);overflow-y:auto}
+
+/* ── 거래처 필터바 ── */
+.cl-filterbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cl-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.filter-sel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);padding:4px 8px 4px 10px;font-size:12.5px;color:var(--text);outline:none;cursor:pointer;font-family:var(--font);transition:border .15s;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237b829a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+.filter-sel:focus,.filter-sel:hover{border-color:var(--border2)}
+.filter-sel.active{border-color:var(--accent);color:var(--accent);background-color:var(--accent-a)}
+.f-cnt-text{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.f-cnt-text .cnt-num{font-family:var(--mono);color:var(--text)}
+.f-cnt-text .cnt-filtered{font-family:var(--mono);color:var(--accent)}
+/* ── 카드 hover 개선 ── */
+.card{transition:border-color .2s}
+.card:hover{border-color:var(--border2)}
+/* ── 태그 패딩 개선 ── */
+.tag{padding:3px 9px}
+/* ── 네비게이션 배지 색상 강조 ── */
+.nav-item.active .nav-badge{background:var(--accent-a);color:var(--accent)}
+/* ── 빈 상태 개선 ── */
+.empty{padding:40px;color:var(--dim);font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:8px}
+/* ── 홈택스 동기화 바 (패널 내부용) ── */
+.tbl-panel #htx-sync-bar{border-radius:0;border-left:none;border-right:none;border-top:none}
+/* ── 토스트 ── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:3000;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:var(--r8);padding:11px 16px;font-size:13.5px;display:flex;align-items:center;gap:8px;min-width:200px;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.45);pointer-events:auto;animation:toastIn .2s ease}
+.toast.t-green{border-left-color:var(--green)}
+.toast.t-red{border-left-color:var(--red)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
+/* ── 모바일 햄버거 & 하단 내비 ── */
+#menu-btn{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--r8);color:var(--muted);cursor:pointer;padding:5px 10px;font-size:17px;line-height:1;align-items:center}
+#menu-btn:hover{color:var(--text);background:var(--surface2)}
+#mob-overlay{display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.55)}
+#bottom-nav{display:none}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;padding-top:4px;-webkit-tap-highlight-color:transparent;transition:color .15s;user-select:none}
+.bnav-item span{display:block;line-height:1.2}
+.bnav-item svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;opacity:.65;transition:opacity .15s}
+.bnav-item.active{color:var(--accent)}.bnav-item.active svg{opacity:1}
+@keyframes mSlideUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .9s linear infinite}
+@media(max-width:640px){
+  /* 햄버거 & 사이드바 오버레이 유지 (로그아웃용) */
+  #menu-btn{display:flex}
+  #sidebar.mob-open{display:flex!important;position:fixed;left:0;top:0;bottom:0;width:224px;z-index:900;box-shadow:8px 0 32px rgba(0,0,0,.5)}
+  /* 사이드바 열렸을 때 960px 규칙으로 숨겨진 텍스트 복원 */
+  #sidebar.mob-open .nav-item span{display:inline}
+  #sidebar.mob-open .nav-item svg{margin:0}
+  #sidebar.mob-open .nav-label{display:block}
+  #sidebar.mob-open .logo-sub{display:block}
+  #sidebar.mob-open .av-name{display:block}
+  #mob-overlay.open{display:block}
+  /* 하단 내비게이션: safe-area 포함해 콘텐츠 영역이 항상 --mob-nav 높이 확보 */
+  #bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:calc(var(--mob-nav) + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--border2);z-index:800;padding-bottom:env(safe-area-inset-bottom,0px);align-items:flex-start}
+  /* 페이지 뷰: 하단 내비 + safe-area 가림 방지 */
+  #page-view{padding:14px 14px calc(var(--mob-nav) + env(safe-area-inset-bottom,0px) + 14px);gap:14px}
+  /* 상단 바 간소화 */
+  .tb-sep,.tb-bread{display:none}
+  #topbar{padding:0 14px;gap:10px}
+  .tb-search{width:110px;font-size:13px}
+  /* 테이블 셀 패딩 축소 */
+  tbody td,thead th{padding:8px 10px}
+  /* 직원 카드 1열 */
+  #staff-cards{grid-template-columns:1fr!important}
+  /* 대시보드 시스템 카드 전체 너비 */
+  #dash-system{width:100%!important}
+  /* 거래처 페이지: 모바일에서 일반 스크롤 복원 */
+  #page-view:has(#page-clients.active){overflow-y:auto}
+  #page-clients.active{flex:unset;overflow:visible}
+  #page-clients .tbl-panel{display:block}
+  #page-clients .tbl-panel .tbl-wrap{max-height:62vh!important}
+  /* 거래처 드로어 → 하단 시트 */
+  #client-drawer{width:100%;height:82vh;top:auto;bottom:calc(var(--mob-nav) + env(safe-area-inset-bottom,0px));transform:translateY(110%);border-left:none;border-top:1px solid var(--border2);border-radius:var(--r16) var(--r16) 0 0}
+  #client-drawer.open{transform:translateY(0)}
+  #drawer-overlay{bottom:calc(var(--mob-nav) + env(safe-area-inset-bottom,0px))}
+  /* CSV / 홈택스 가져오기 버튼: 모바일에서 숨김 */
+  #btn-export,#btn-htx-import{display:none!important}
+  /* 모달 → 하단 시트 */
+  .modal{width:100%!important;max-width:100%!important;border-radius:var(--r16) var(--r16) 0 0;max-height:92vh;margin:0;animation:mSlideUp .22s ease}
+  #modal-overlay{align-items:flex-end;padding:0}
+}
+/* ── 거래처 슬라이드 드로어 ── */
+#client-drawer{position:fixed;right:0;top:var(--hh);bottom:0;width:340px;background:var(--surface);border-left:1px solid var(--border2);z-index:600;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);overflow:hidden;display:flex;flex-direction:column}
+#client-drawer.open{transform:translateX(0)}
+#drawer-overlay{display:none;position:fixed;inset:0;z-index:599;background:rgba(0,0,0,.3)}
+#drawer-overlay.open{display:block}
+.drawer-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drawer-body{padding:18px 20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.drawer-row{display:flex;flex-direction:column;gap:3px}
+.drawer-lbl{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.drawer-val{font-size:13.5px;color:var(--text)}
+.drawer-sep{border-top:1px solid var(--border);padding-top:12px;margin-top:2px;display:flex;flex-direction:column;gap:12px}
+/* ── 정렬 가능 헤더 ── */
+.th-sort{cursor:pointer;user-select:none;transition:background .1s,color .1s}
+.th-sort:hover{background:var(--surface3)!important;color:var(--text)!important}
+.th-sort.s-asc::after{content:' ▲';font-size:9px;color:var(--accent);opacity:1}
+.th-sort.s-desc::after{content:' ▼';font-size:9px;color:var(--accent);opacity:1}
+tbody tr.cl-row{cursor:pointer}
+.fee-link{color:var(--accent);text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer;transition:opacity .15s}
+.fee-link:hover{opacity:.7;text-decoration:underline solid}
+/* ── 거래처 현황 모바일 전용 액션 바 ── */
+#cl-mob-bar{display:none;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border2);background:var(--surface);flex-shrink:0}
+@media(max-width:640px){
+  #main:has(#page-clients.active) #cl-mob-bar{display:flex}
+  #main:has(#page-clients.active) #topbar #btn-verify-status,
+  #main:has(#page-clients.active) #topbar #btn-add{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-box" id="login-panel">
+    <div class="login-logo">INTAX</div>
+    <div class="login-sub">Tax Accounting Consulting</div>
+    <div class="login-err" id="login-err"></div>
+    <label class="form-label">아이디(이름)</label>
+    <input id="login-id" type="text" placeholder="아이디를 입력하세요" autocomplete="username"/>
+    <label class="form-label">비밀번호</label>
+    <input id="login-pw" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password"/>
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+    <button class="login-btn" style="background:transparent;border:1px solid var(--border2);color:var(--muted);margin-top:8px" onclick="showRegister()">계정 생성</button>
+    <div class="login-hint">
+      대표: <b>김인욱</b> / <b>1234</b><br/>
+      직원: <b>강수민</b> · <b>이지우</b> · <b>김지민</b> / <b>1234</b>
+    </div>
+  </div>
+
+  <!-- 계정 생성 패널 -->
+  <div class="login-box" id="register-panel" style="display:none">
+    <div class="login-logo" style="font-size:22px">계정 생성</div>
+    <div class="login-sub">신규 계정을 등록합니다</div>
+    <div class="login-err" id="reg-err"></div>
+    <label class="form-label">이름 *</label>
+    <input id="reg-name" type="text" placeholder="이름을 입력하세요"/>
+    <label class="form-label">아이디(이름) *</label>
+    <input id="reg-id" type="text" placeholder="로그인 아이디를 입력하세요" autocomplete="off"/>
+    <label class="form-label">비밀번호 *</label>
+    <input id="reg-pw" type="password" placeholder="비밀번호를 입력하세요" autocomplete="off"/>
+    <label class="form-label">권한</label>
+    <select id="reg-role" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);padding:9px 13px;font-size:14px;color:var(--text);outline:none;width:100%;margin-bottom:14px;font-family:var(--font)">
+      <option value="직원">직원</option>
+      <option value="대표">대표</option>
+    </select>
+    <button class="login-btn" onclick="doRegister()">계정 생성</button>
+    <button class="login-btn" style="background:transparent;border:1px solid var(--border2);color:var(--muted);margin-top:8px" onclick="showLogin()">← 로그인으로 돌아가기</button>
+  </div>
+</div>
+
+<div id="shell" style="display:none">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="logo" onclick="go('dashboard');closeSidebar()" style="cursor:pointer">
+    <div class="logo-mark">INTAX</div>
+    <div class="logo-sub">Tax Accounting Consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-label">경영 현황</div>
+    <div class="nav-item" data-page="clients">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>거래처 현황</span>
+      <span class="nav-badge" id="nav-badge-c">0</span>
+    </div>
+
+    <div class="nav-item" data-page="staff">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>직원 현황</span>
+    </div>
+    <div class="nav-item" data-page="notices">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.4 2 2 0 0 1 3.62 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.9a16 16 0 0 0 6.1 6.09l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span>안내문 발송</span>
+    </div>
+  </div>
+  <div id="sidebar-foot">
+    <div class="s-avatar" id="s-av">대</div>
+    <div><div class="av-name" id="s-name">관리자</div><div class="av-role" id="s-role">대표</div></div>
+  </div>
+  <button id="logout-btn" onclick="doLogout()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    <span>로그아웃</span>
+  </button>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <header id="topbar">
+    <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+    <span id="page-title">대시보드</span>
+    <span class="tb-sep">/</span>
+    <span class="tb-bread" id="page-bread">경영 현황 한눈에 보기</span>
+    <div id="tb-right">
+      <input class="tb-search" id="g-search" type="search" placeholder="거래처, 직원 검색…"/>
+      <button class="btn btn-ghost btn-sm" id="btn-export" style="display:none" onclick="exportCSV()">↓ CSV</button>
+      <button class="btn btn-ghost btn-sm role-boss-only" id="btn-htx-import" style="display:none" onclick="document.getElementById('htx-file').click()">↑ 홈택스 가져오기</button>
+      <input type="file" id="htx-file" accept=".json" style="display:none" onchange="importHometaxFile(event)"/>
+      <button class="btn btn-ghost btn-sm role-boss-only" id="btn-verify-status" style="display:none" onclick="doVerifyStatus()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        상태 검증
+      </button>
+      <button class="btn btn-primary btn-sm" id="btn-add" style="display:none"></button>
+    </div>
+  </header>
+
+  <!-- 거래처 현황 모바일 전용 액션 바 -->
+  <div id="cl-mob-bar">
+    <button class="btn btn-ghost btn-sm role-boss-only" onclick="doVerifyStatus()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      상태 검증
+    </button>
+    <button class="btn btn-primary btn-sm role-boss-only" onclick="openCM()">+ 거래처 등록</button>
+  </div>
+
+  <div id="page-view">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div>
+        <div class="sh">
+          <span class="sh-title">핵심 지표</span>
+          <div class="tabs" id="period-tabs">
+            <button class="tab active" data-p="month">월별</button>
+            <button class="tab" data-p="quarter">분기</button>
+            <button class="tab" data-p="year">연도</button>
+          </div>
+        </div>
+        <div class="g4">
+          <div class="card">
+            <div class="card-label">총 기장 거래처</div>
+            <div class="card-val tc-a" id="kpi-c">0</div>
+            <div class="card-chg" id="kpi-c2">정상 거래처</div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div class="card-label">총 기장료 합계</div>
+              <div class="card-val" style="color:var(--accent)" id="kpi-fk">-</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-label">총 신고대리 거래처</div>
+            <div class="card-val" style="color:var(--muted)" id="kpi-rep">0</div>
+            <div class="card-chg" id="kpi-rep2">신고대리 거래처</div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div class="card-label">신고대리 금액</div>
+              <div class="card-val" style="color:var(--yellow)" id="kpi-fr">-</div>
+            </div>
+          </div>
+          <div class="card"><div class="card-label">재직 직원 수</div><div class="card-val" id="kpi-s">0명</div><div class="card-chg" id="kpi-s2">재직 중</div></div>
+          <div class="card" style="visibility:hidden"></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div>
+          <div class="sh"><span class="sh-title">최근 등록 거래처</span><button class="btn btn-ghost btn-sm" onclick="go('clients')">전체 보기</button></div>
+          <div class="tbl-wrap"><table><thead><tr><th>업체명</th><th>유형</th><th>기장료</th><th>담당</th></tr></thead><tbody id="d-clients"></tbody></table></div>
+        </div>
+        <div>
+          <div class="sh"><span class="sh-title">직원 현황</span><button class="btn btn-ghost btn-sm" onclick="go('staff')">전체 보기</button></div>
+          <div class="tbl-wrap"><table><thead><tr><th>직원명</th><th>담당 수</th><th>기여 기장료</th></tr></thead><tbody id="d-staff"></tbody></table></div>
+        </div>
+      </div>
+      <div class="g2">
+        <!-- 기장료 구간 분포 -->
+        <div>
+          <div class="sh"><span class="sh-title">기장료 구간 분포</span><span id="fee-dist-sub" style="font-size:12px;color:var(--muted)"></span></div>
+          <div class="card"><canvas id="ch-fee-dist" height="55"></canvas></div>
+        </div>
+        <!-- 시스템 상태 통합 카드 (대표만) -->
+        <div id="dash-system" class="role-boss-block">
+        <div class="sh"><span class="sh-title">시스템</span></div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <!-- 홈택스 동기화 행 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:34px;height:34px;border-radius:var(--r8);background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.7"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              </div>
+              <div>
+                <div style="font-size:13.5px;font-weight:500">홈택스 동기화</div>
+                <div id="dash-htx-time" style="font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-top:2px"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="dash-htx-badge" class="tag tag-gray">확인 중</span>
+              <button id="btn-htx-sync" class="btn btn-ghost btn-sm" onclick="doHometaxSync()" style="gap:5px">
+                <svg id="htx-sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span id="htx-sync-label">동기화</span>
+              </button>
+            </div>
+          </div>
+          <!-- 데이터 관리 행 (대표만) -->
+          <div class="role-boss-only" style="border-top:1px solid var(--border);padding:14px 18px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:34px;height:34px;border-radius:var(--r8);background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.7"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              </div>
+              <span style="font-size:13.5px;font-weight:500">데이터 관리</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="exportJSON()">↓ 전체 백업</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('imp-file').click()">↑ 가져오기</button>
+              <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importJSON(event)"/>
+              <button class="btn btn-danger btn-sm" onclick="doReset()">전체 초기화</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- ── CLIENTS ── -->
+    <div class="page" id="page-clients">
+      <!-- 숨김 필터 (팝업·검색용) -->
+
+      <input type="search" id="f-phone" style="display:none"/>
+      <!-- 필터 팝업 -->
+      <div id="f-popup" style="display:none;position:fixed;z-index:500;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 12px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+        <div id="f-popup-inner"></div>
+        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+          <button class="btn btn-ghost btn-sm" onclick="closeFilterPopup()">닫기</button>
+          <button class="btn btn-primary btn-sm" onclick="applyFilterPopup()">적용</button>
+        </div>
+      </div>
+      <!-- 테이블 패널 -->
+      <div class="tbl-panel">
+        <!-- 필터바 -->
+        <div class="cl-filterbar">
+          <div class="cl-filters">
+            <select id="f-div" class="filter-sel"><option value="">구분 전체</option><option>기장</option><option>신고대리</option></select>
+            <select id="f-type" class="filter-sel"><option value="">유형 전체</option><option>법인</option><option>개인</option></select>
+            <input type="search" id="f-kw" class="filter-sel" placeholder="업체명 검색" style="background-image:none;padding-right:8px;min-width:100px;max-width:130px"/>
+            <input type="search" id="f-bizno" class="filter-sel" placeholder="사업자번호" style="background-image:none;padding-right:8px;min-width:100px;max-width:130px"/>
+            <select id="f-status" class="filter-sel"><option value="">상태 전체</option><option>정상</option><option>휴업</option><option>폐업</option></select>
+            <select id="f-fee-band" class="filter-sel"><option value="">기장료 전체</option><option value="0">10만 이하</option><option value="1">10~20만</option><option value="2">20~30만</option><option value="3">30만 초과</option></select>
+            <select id="f-staff" class="filter-sel"><option value="">담당자 전체</option></select>
+            <span id="fi-staff" style="display:none"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="f-cnt" class="f-cnt-text"></span>
+            <button class="btn btn-ghost btn-sm" onclick="resetF()">초기화</button>
+          </div>
+        </div>
+        <!-- 홈택스 동기화 알림 -->
+        <div id="htx-sync-bar" style="display:none;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:var(--green-a);border-bottom:1px solid rgba(46,207,168,0.25);font-size:12.5px;color:var(--green)">
+          <span id="htx-sync-msg"></span>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('htx-sync-bar').style.display='none'">닫기</button>
+        </div>
+        <!-- 거래처 표 -->
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr id="cl-thead-row">
+                <th>#</th>
+                <th class="th-sort s-asc" id="th-div" onclick="setSortCl('div')">구분</th>
+                <th>유형</th>
+                <th class="th-sort" id="th-name" onclick="setSortCl('name')">업체명</th>
+                <th>사업자번호</th>
+                <th>상태</th>
+                <th class="th-sort" id="th-fee" onclick="setSortCl('fee')">기장료</th>
+                <th class="th-sort" id="th-staff" onclick="setSortCl('staff')">담당직원</th>
+                <th class="th-filter" data-fid="f-phone" style="cursor:pointer;user-select:none">연락처 <span class="f-ind" id="fi-phone"></span></th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="cl-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── NOTICES ── -->
+    <div class="page" id="page-notices">
+      <div class="card">
+        <div class="sh" style="margin-bottom:14px"><span class="sh-title">새 안내문 작성</span></div>
+        <div class="form-row">
+          <div class="form-group"><div class="form-label">신고 유형</div>
+            <select class="form-select" id="n-type"><option>부가가치세</option><option>법인세</option><option>종합소득세</option><option>원천세</option><option>기타</option></select></div>
+          <div class="form-group"><div class="form-label">신고 마감일</div><input class="form-input" type="date" id="n-deadline"/></div>
+        </div>
+
+        <!-- 대상 거래처 필터 -->
+        <div class="form-group">
+          <div class="form-label" style="margin-bottom:8px">대상 거래처</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px">
+              <div style="font-size:11.5px;color:var(--muted)">구분</div>
+              <select class="form-select" id="n-div" style="font-size:13px">
+                <option value="">전체</option>
+                <option value="기장">기장</option>
+                <option value="신고대리">신고대리</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px">
+              <div style="font-size:11.5px;color:var(--muted)">유형</div>
+              <select class="form-select" id="n-type-f" style="font-size:13px">
+                <option value="">전체</option>
+                <option value="법인">법인</option>
+                <option value="개인">개인</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:flex-end">
+              <button class="btn btn-ghost btn-sm" onclick="resetNoticeFilter()">초기화</button>
+            </div>
+          </div>
+          <!-- 대상 거래처 미리보기 -->
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:6px">
+            <span id="n-target-cnt" class="tc-m" style="font-size:12px"></span>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r8);max-height:160px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+              <thead>
+                <tr style="background:var(--surface3)">
+                  <th style="padding:7px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;border-bottom:1px solid var(--border)">업체명</th>
+                  <th style="padding:7px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;border-bottom:1px solid var(--border)">구분</th>
+                  <th style="padding:7px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;border-bottom:1px solid var(--border)">유형</th>
+                  <th style="padding:7px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;border-bottom:1px solid var(--border)">담당직원</th>
+                </tr>
+              </thead>
+              <tbody id="n-target-list"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="form-group"><div class="form-label">안내문 내용</div>
+          <textarea class="form-textarea" id="n-body" rows="5" placeholder="안내문 내용을 입력하세요…"></textarea></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="fillTmpl()">템플릿 불러오기</button>
+          <button class="btn btn-primary" onclick="sendNotice()">발송 기록 저장</button>
+        </div>
+      </div>
+      <div class="sh"><span class="sh-title">발송 히스토리</span></div>
+      <div id="notice-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <!-- ── STAFF ── -->
+    <div class="page" id="page-staff">
+      <div class="g3" id="staff-cards"></div>
+      <div class="g2">
+        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 기여 기장료</div><canvas id="ch-sf" height="80"></canvas></div>
+        <div class="card" style="padding-bottom:14px"><div class="card-label" style="margin-bottom:10px">직원별 담당 거래처 수</div><canvas id="ch-sc" height="80"></canvas></div>
+      </div>
+      <!-- 직원 + 계정 통합 테이블 -->
+      <div>
+        <div class="sh">
+          <span class="sh-title">계정 관리</span>
+          <button class="btn btn-primary btn-sm role-boss-only" onclick="openAM()">+ 계정 추가</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="tbl-wrap" style="border:none;border-radius:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>이름</th><th>권한</th><th>로그인 ID</th>
+                  <th>담당 거래처</th><th>기여 기장료</th>
+                  <th>입사일</th><th>잔여 연차</th>
+                  <th>상태</th><th style="min-width:260px">액션</th>
+                </tr>
+              </thead>
+              <tbody id="merged-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- 하단 내비게이션 (모바일) -->
+<nav id="bottom-nav">
+  <div class="bnav-item" data-page="clients">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>거래처</span>
+  </div>
+  <div class="bnav-item" data-page="staff">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>직원</span>
+  </div>
+  <div class="bnav-item" data-page="notices">
+    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.4 2 2 0 0 1 3.62 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.9a16 16 0 0 0 6.1 6.09l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    <span>안내문</span>
+  </div>
+</nav>
+
+</div>
+
+<!-- CLIENT DRAWER -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="client-drawer">
+  <div class="drawer-hd">
+    <span id="drawer-name" style="font-size:15px;font-weight:500"></span>
+    <button onclick="closeDrawer()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- MOBILE OVERLAY -->
+<div id="mob-overlay" onclick="closeSidebar()"></div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title" id="m-title">—</span><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div id="m-body"></div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" id="m-confirm">저장</button></div>
+  </div>
+</div>
+
+<script>
+// ─── STORAGE ─────────────────────────────────────
+const S={
+  async get(k){
+    try{const r=await window.storage.get(k);return r?JSON.parse(r.value):null}
+    catch{try{const raw=localStorage.getItem(k);return raw?JSON.parse(raw):null}catch{return null}}
+  },
+  async set(k,v){
+    try{await window.storage.set(k,JSON.stringify(v))}
+    catch{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+  }
+};
+
+// ─── DB ──────────────────────────────────────────
+let DB={clients:[],staff:[],notices:[],users:[{id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱'}]};
+let CUR='dashboard', EID=null, ME=null;
+const CI={};
+
+// ─── REMOTE SYNC ──────────────────────────────────
+const REMOTE_BACKUP_URL='https://raw.githubusercontent.com/iukimblock-collab/intax-dashboard/main/intax_backup.json';
+
+async function tryRemoteSync(){
+  try{
+    const resp=await fetch(REMOTE_BACKUP_URL,{cache:'no-store'});
+    if(!resp.ok) return;
+    const backup=await resp.json();
+    if(!backup.clients||!Array.isArray(backup.clients)||backup.clients.length===0) return;
+    // 로컬 vs 원격 동기화 시각 비교 → 원격이 더 최신이거나 로컬이 비어있으면 덮어씀
+    const localSynced=DB.meta&&DB.meta.hometax_synced_at||DB.htxLastSync||'';
+    const remoteSynced=backup.meta&&backup.meta.hometax_synced_at||backup.htxLastSync||'';
+    const localEmpty=!DB.clients||DB.clients.length===0;
+    if(localEmpty||remoteSynced>localSynced){
+      DB.clients=backup.clients;
+      DB.staff=backup.staff||DB.staff;
+      DB.notices=backup.notices||DB.notices;
+      // users는 덮어쓰지 않음 (로컬 계정 우선)
+      if(backup.meta) DB.meta=backup.meta;
+      if(backup.htxLastSync) DB.htxLastSync=backup.htxLastSync;
+      else if(backup.meta&&backup.meta.hometax_synced_at) DB.htxLastSync=backup.meta.hometax_synced_at;
+      await save();
+      console.log('[INTAX] 원격 데이터 동기화 완료. 거래처:',backup.clients.length,'건, 동기화:',remoteSynced);
+    }
+  }catch(e){
+    console.warn('[INTAX] 원격 동기화 실패 (오프라인?):', e.message||e);
+  }
+}
+
+// ─── STAFF MAP (Excel 인택스 시트 F열↔J열 매핑) ──────
+const _SM={
+  '58186410':'강수민','10887192':'강수민','14281677':'강수민','30988239':'강수민','37986438':'강수민',
+  '71685930':'강수민','30588255':'강수민','76187156':'강수민','44185735':'강수민','44086117':'강수민',
+  '25788222':'강수민','62487504':'강수민','60187097':'강수민','70999420':'강수민','41672070':'강수민',
+  '13623990':'강수민','27286193':'강수민','52917152':'강수민','39686301':'강수민','72988434':'강수민',
+  '14063322':'강수민','18228854':'강수민','17817164':'강수민','70735665':'강수민','85046757':'강수민',
+  '72037906':'강수민','32903478':'강수민','12688751':'강수민','41781060':'강수민','70581168':'강수민',
+  '33381416':'강수민','15828318':'강수민','66285759':'강수민','85187217':'강수민','34876251':'강수민',
+  '70402725':'강수민','48245178':'강수민','23722996':'강수민','62907833':'강수민','19155723':'강수민',
+  '20326308':'강수민','52718100':'강수민','27404004':'강수민','44445194':'강수민','84728226':'강수민',
+  '14220014':'강수민','10620963':'강수민','76746950':'강수민','43910826':'강수민',
+  '68181432':'이지우','50822382':'이지우','55881688':'이지우','82887099':'이지우','12887769':'이지우',
+  '60487397':'이지우','18629584':'이지우','39886350':'이지우','37886977':'이지우','11081267':'이지우',
+  '65388056':'이지우','50287106':'이지우','78881203':'이지우','11320032':'이지우','11014863':'이지우',
+  '49640658':'이지우','46734283':'이지우','80516286':'이지우','44581535':'이지우','12410364':'이지우',
+  '89058665':'이지우','39086262':'이지우','26986503':'이지우','65786675':'이지우','30987089':'이지우',
+  '70288552':'이지우','85481418':'이지우','37340112':'이지우','20587938':'이지우','55387481':'이지우',
+  '44633198':'이지우','83755760':'이지우','89872200':'이지우','20117957':'이지우','68701390':'이지우',
+  '65799377':'이지우','67786366':'이지우','69991641':'이지우','48493664':'이지우','14406431':'이지우',
+  '22426193':'이지우','63214568':'이지우','56533386':'이지우','23656886':'이지우','41229464':'이지우',
+  '53317109':'이지우','53966334':'이지우','23558330':'이지우','59181176':'이지우','51515370':'이지우',
+  '45086925':'김지민','86381700':'김지민','13912488':'김지민','26286269':'김지민','52388775':'김지민',
+  '82882699':'김지민','42486606':'김지민','70587137':'김지민','88387117':'김지민','25881376':'김지민',
+  '27881424':'김지민','59488024':'김지민','87586268':'김지민','24586375':'김지민','24387361':'김지민',
+  '28281777':'김지민','67886390':'김지민','18387206':'김지민','21988012':'김지민','49687363':'김지민',
+  '86388955':'김지민','39888859':'김지민','46588124':'김지민','27781187':'김지민','29087241':'김지민',
+  '68388305':'김지민','58487049':'김지민','78381324':'김지민','11286361':'김지민','68988167':'김지민',
+  '50688372':'김지민','67981176':'김지민','60787284':'김지민','21288876':'김지민','67281307':'김지민',
+  '84081685':'김지민','40788212':'김지민','86988216':'김지민','66786065':'김지민','17586999':'김지민',
+  '69788513':'김지민','87581055':'김지민','32387110':'김지민','27487517':'김지민','15687413':'김지민',
+  '36587531':'김지민','42188560':'김지민','81088547':'김지민','45986046':'김지민','54587554':'김지민',
+  '68981075':'김지민','61484100':'김지민','31717262':'김지민',
+};
+function applyStaffMap(){
+  let changed=0;
+  DB.clients.forEach(c=>{
+    if(c.staff_id) return;
+    const d=(c.biz_no||'').replace(/[^0-9]/g,'');
+    if(!d) return;
+    // 엑셀 키 = 10자리 사업자번호의 앞5자리 + 뒤3자리 (중간 2자리 제외)
+    const key=d.length===10?d.substr(0,5)+d.substr(7,3):d;
+    const name=_SM[key];
+    if(!name) return;
+    const staff=DB.staff.find(x=>x.name===name);
+    if(staff){c.staff_id=staff.id;changed++;}
+  });
+  if(changed) console.log('[INTAX] 담당직원 자동 배정:',changed,'건');
+}
+
+// ─── AUTH ─────────────────────────────────────────
+async function init(){
+  // 로컬 데이터 없으면 GitHub에서 원격 로드 시도
+  await tryRemoteSync();
+  const saved=await S.get('intax-v2');
+  if(saved){
+    DB=saved;
+    // 관리자 계정 누락 시 보완 (비밀번호는 저장된 값 유지)
+    if(!DB.users) DB.users=[{id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'}];
+    else if(!(DB.users||[]).find(u=>u.id==='u1')) DB.users.unshift({id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'});
+    // 더미 직원 → 실제 직원으로 마이그레이션 (ID 유지하여 담당 거래처 연결 보존)
+    const _dummy=['김세무','이기장','박회계'];
+    if(DB.staff&&DB.staff.some(s=>_dummy.includes(s.name))){
+      const _real=[
+        {id:'s1',name:'강수민',leave_used:0,status:'재직',color:'#4f7eff',join_date:'2023-12-04'},
+        {id:'s2',name:'이지우',leave_used:0,status:'재직',color:'#2ecfa8',join_date:'2024-11-25'},
+        {id:'s3',name:'김지민',leave_used:0,status:'재직',color:'#ff7c4f',join_date:'2025-09-08'},
+      ];
+      // 기존 직원 정보에서 커스텀 필드(담당 건수 등)는 유지하고 이름/직급만 교체
+      DB.staff=_real.map(r=>{const old=DB.staff.find(s=>s.id===r.id);return old?{...old,...r}:r;});
+      await save();
+    }
+    // 자동 부여된 더미 직급 제거
+    const _dummyRanks=['세무사','주임','사원'];
+    DB.staff.forEach(s=>{if(_dummyRanks.includes(s.rank)) delete s.rank;});
+    // 직원 계정 ↔ DB.staff 이름 기준 연동 (staff_id 없는 경우만)
+    (DB.users||[]).filter(u=>u.role==='직원'&&!u.staff_id).forEach(u=>{
+      const s=DB.staff.find(x=>x.name===u.name&&!(DB.users||[]).some(uu=>uu.staff_id===x.id));
+      if(s) u.staff_id=s.id;
+    });
+    // 직원 3명 계정 없으면 자동 생성 (기존 세션 마이그레이션)
+    [{name:'강수민'},{name:'이지우'},{name:'김지민'}].forEach(({name})=>{
+      const s=DB.staff.find(x=>x.name===name);
+      if(!s) return;
+      if((DB.users||[]).find(u=>u.staff_id===s.id)) return;
+      if(!DB.users) DB.users=[];
+      DB.users.push({id:'u_'+s.id,name,role:'직원',pw:'1234',loginId:name,access:'거래처, 안내문, 직원',staff_id:s.id});
+    });
+    // 직원 비밀번호 0000 → 1234 마이그레이션
+    (DB.users||[]).filter(u=>u.role==='직원'&&u.pw==='0000').forEach(u=>{u.pw='1234';});
+    // 입사일 초기값 반영 (미설정 시에만)
+    const _joinMap={s1:'2023-12-04',s2:'2024-11-25',s3:'2025-09-08'};
+    DB.staff.forEach(s=>{
+      if(_joinMap[s.id]&&!s.join_date) s.join_date=_joinMap[s.id];
+      if(s.leave_used===undefined) s.leave_used=0;
+    });
+    applyStaffMap();
+    // 사업자번호 기반 법인/개인 자동 보정
+    DB.clients.forEach(c=>{if(c.biz_no) c.type=bizType(c.biz_no);});
+    await save();
+  } else await seed();
+  // 기존 세션 확인
+  const sess=await S.get('intax-session');
+  if(sess){
+    const u=(DB.users||[]).find(x=>x.id===sess.uid);
+    if(u){loginAs(u);return;}
+  }
+  showLogin();
+}
+
+function showLogin(){
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('shell').style.display='none';
+  document.getElementById('login-panel').style.display='';
+  document.getElementById('register-panel').style.display='none';
+  document.getElementById('login-err').textContent='';
+  setTimeout(()=>document.getElementById('login-id').focus(),100);
+}
+
+function showRegister(){
+  document.getElementById('login-panel').style.display='none';
+  document.getElementById('register-panel').style.display='';
+  document.getElementById('reg-err').textContent='';
+  document.getElementById('reg-name').value='';
+  document.getElementById('reg-id').value='';
+  document.getElementById('reg-pw').value='';
+  setTimeout(()=>document.getElementById('reg-name').focus(),100);
+}
+
+async function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const loginId=document.getElementById('reg-id').value.trim();
+  const pw=document.getElementById('reg-pw').value;
+  const role=document.getElementById('reg-role').value;
+  const err=document.getElementById('reg-err');
+  if(!name){err.textContent='이름을 입력해 주세요.';return;}
+  if(!loginId){err.textContent='아이디를 입력해 주세요.';return;}
+  if(!pw){err.textContent='비밀번호를 입력해 주세요.';return;}
+  if((DB.users||[]).find(u=>u.loginId===loginId)){err.textContent='이미 사용 중인 아이디입니다.';return;}
+  if(!DB.users) DB.users=[];
+  const access=role==='대표'?'전체':'거래처, 안내문, 직원';
+  DB.users.push({id:'u'+Date.now(),name,role,loginId,pw,access});
+  await save();
+  err.style.color='var(--green)';
+  err.textContent='계정이 생성되었습니다. 로그인해 주세요.';
+  setTimeout(()=>{err.style.color='';showLogin();},1200);
+}
+
+function doLogin(){
+  const id=document.getElementById('login-id').value.trim();
+  const pw=document.getElementById('login-pw').value;
+  const err=document.getElementById('login-err');
+  const u=(DB.users||[]).find(x=>x.loginId===id&&x.pw===pw);
+  if(!u){err.textContent='아이디 또는 비밀번호가 올바르지 않습니다.';return;}
+  err.textContent='';
+  S.set('intax-session',{uid:u.id});
+  loginAs(u);
+}
+
+function loginAs(u){
+  ME=u;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('shell').style.display='';
+  // 권한 클래스 적용
+  document.body.classList.toggle('role-boss', u.role==='대표');
+  // 대표만: + 거래처/직원 등록 버튼 노출
+  syncSidebar();
+  go('dashboard');
+}
+
+async function doLogout(){
+  ME=null;
+  await S.set('intax-session',null);
+  document.getElementById('login-id').value='';
+  document.getElementById('login-pw').value='';
+  document.getElementById('login-err').textContent='';
+  showLogin();
+}
+
+// Enter 키 로그인
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!document.getElementById('login-screen').classList.contains('hidden')) doLogin();
+});
+
+async function seed(){
+  DB.staff=[
+    {id:'s1',name:'강수민',leave_used:0,status:'재직',color:'#4f7eff',join_date:'2023-12-04'},
+    {id:'s2',name:'이지우',leave_used:0,status:'재직',color:'#2ecfa8',join_date:'2024-11-25'},
+    {id:'s3',name:'김지민',leave_used:0,status:'재직',color:'#ff7c4f',join_date:'2025-09-08'},
+  ];
+  DB.users=[
+    {id:'u1',name:'김인욱',role:'대표',pw:'1234',loginId:'김인욱',access:'전체'},
+    {id:'u_s1',name:'강수민',role:'직원',pw:'1234',loginId:'강수민',access:'거래처, 안내문, 직원',staff_id:'s1'},
+    {id:'u_s2',name:'이지우',role:'직원',pw:'1234',loginId:'이지우',access:'거래처, 안내문, 직원',staff_id:'s2'},
+    {id:'u_s3',name:'김지민',role:'직원',pw:'1234',loginId:'김지민',access:'거래처, 안내문, 직원',staff_id:'s3'},
+  ];
+  const secs=['제조업','도소매','서비스','음식업','건설업','IT','부동산','기타'];
+  const names=['가나다 주식회사','나다라 상사','다라마 컨설팅','라마바 F&B','마바사 건설','바사아 솔루션','사아자 부동산','아자차 물산','자차카 서비스','차카타 상회','카타파 주식회사','타파하 개인','파하가 기업','하가나 코퍼레이션','가나다 무역'];
+  DB.clients=names.map((n,i)=>({
+    id:'c'+(i+1),name:n,
+    biz_no:`${300+i*10}-${10+i}-${10000+i*113}`,
+    type:i%3===0?'법인':'개인',
+    status:i===4||i===11?'폐업':'정상',
+    sector:secs[i%secs.length],
+    size:i%3===0?'중소기업':i%3===1?'소상공인':'개인사업자',
+    fee:150000+i*30000,
+    cms:i%4===3?'N':'Y',
+    cms_status:i%5===0?'체납':i%4===0?'미납':'납부',
+    staff_id:DB.staff[i%3].id,
+    phone:`010-${1000+i*77}-${2000+i*33}`,
+    hometax_id:'',karinara_id:'',note:''
+  }));
+  DB.notices=[
+    {id:'n1',type:'부가가치세',deadline:'2025-07-25',target:'전체 거래처',body:'부가가치세 신고 기간 안내드립니다. 마감일까지 자료를 제출해 주세요.',date:'2025-06-01',count:15},
+    {id:'n2',type:'원천세',deadline:'2025-06-10',target:'전체 거래처',body:'5월분 원천세 신고 안내입니다.',date:'2025-05-28',count:15},
+  ];
+  await save();
+}
+
+async function save(){await S.set('intax-v2',DB);}
+
+// ─── NAV ─────────────────────────────────────────
+const PM={
+  dashboard:{title:'대시보드',bread:'경영 현황 한눈에 보기',add:''},
+  clients:{title:'거래처 현황',bread:'거래처 등록 및 조회',add:'+ 거래처 등록'},
+  notices:{title:'안내문 발송',bread:'신고별 안내문 작성',add:''},
+  staff:{title:'직원 현황',bread:'직원 등록 및 실적 관리',add:''},
+};
+
+function go(p){
+  CUR=p;
+  document.querySelectorAll('.nav-item,.bnav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===p));
+  document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id==='page-'+p));
+  const m=PM[p];
+  document.getElementById('page-title').textContent=m.title;
+  document.getElementById('page-bread').textContent=m.bread;
+  const isBoss=ME&&ME.role==='대표';
+  const ba=document.getElementById('btn-add');
+  const addLabel=isBoss?m.add:'';
+  ba.textContent=addLabel; ba.style.display=addLabel?'':'none';
+  document.getElementById('btn-export').style.display=(p==='clients'&&isBoss)?'':'none';
+  document.getElementById('btn-htx-import').style.display=(p==='clients'&&isBoss)?'flex':'none';
+  document.getElementById('btn-verify-status').style.display=(p==='clients'&&isBoss)?'':'none';
+  render(p);
+}
+
+document.querySelectorAll('.nav-item,.bnav-item').forEach(el=>el.addEventListener('click',()=>go(el.dataset.page)));
+document.getElementById('btn-add').addEventListener('click',()=>{
+  if(CUR==='clients') openCM();
+});
+
+// ─── RENDER ──────────────────────────────────────
+function render(p){
+  if(p==='dashboard') rDash();
+  if(p==='clients')   rClients();
+  if(p==='notices')   rNotices();
+  if(p==='staff')     rStaff();
+  document.getElementById('nav-badge-c').textContent=DB.clients.filter(c=>c.status==='정상').length;
+}
+
+// ─── DASHBOARD ───────────────────────────────────
+function rDash(){
+  const period=document.querySelector('#period-tabs .tab.active')?.dataset.p||'month';
+  const mult=period==='year'?12:period==='quarter'?3:1;
+  const lbl=period==='year'?'연간':period==='quarter'?'당분기':'당월';
+  const act=DB.clients.filter(c=>c.status==='정상');
+  const actKijang=act.filter(c=>(c.div||'기장')==='기장');
+  const actRep=act.filter(c=>c.div==='신고대리');
+  const baseK=actKijang.reduce((s,c)=>s+c.fee,0);
+  const baseR=actRep.reduce((s,c)=>s+c.fee,0);
+  const tf=(baseK+baseR)*mult;
+  const _kAll=DB.clients.filter(c=>(c.div||'기장')==='기장');
+  const _kS=_kAll.filter(c=>c.status==='휴업').length;
+  const _kC=_kAll.filter(c=>c.status==='폐업').length;
+  const _rAll=DB.clients.filter(c=>c.div==='신고대리');
+  const _rS=_rAll.filter(c=>c.status==='휴업').length;
+  const _rC=_rAll.filter(c=>c.status==='폐업').length;
+  document.getElementById('kpi-c').textContent=actKijang.length;
+  document.getElementById('kpi-c2').innerHTML=
+    `<span style="color:var(--green)">정상 ${actKijang.length}</span>&ensp;`+
+    `<span style="color:var(--yellow)">휴업 ${_kS}</span>&ensp;`+
+    `<span style="color:var(--red)">폐업 ${_kC}</span>`;
+  document.getElementById('kpi-rep').textContent=actRep.length;
+  document.getElementById('kpi-rep2').innerHTML=
+    `<span style="color:var(--green)">정상 ${actRep.length}</span>&ensp;`+
+    `<span style="color:var(--yellow)">휴업 ${_rS}</span>&ensp;`+
+    `<span style="color:var(--red)">폐업 ${_rC}</span>`;
+  document.getElementById('kpi-fk').textContent=fmt(baseK*mult)+'원';
+  document.getElementById('kpi-fr').textContent=fmt(baseR*mult)+'원';
+  document.getElementById('kpi-s').textContent=DB.staff.filter(s=>s.status==='재직').length+'명';
+  document.getElementById('kpi-s2').textContent='전체 '+DB.staff.length+'명 중 재직';
+
+  // KPI 숫자 클릭 → 거래처 현황 필터 연동
+  const kpiC=document.getElementById('kpi-c');
+  const kpiRep=document.getElementById('kpi-rep');
+  kpiC.style.cssText+='cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
+  kpiC.onclick=()=>{go('clients');setTimeout(()=>{const d=document.getElementById('f-div');if(d){d.value='기장';updateFilterIndicators();rClients();}},50);};
+  kpiRep.style.cssText+='cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
+  kpiRep.onclick=(e)=>{e.stopPropagation();go('clients');setTimeout(()=>{const d=document.getElementById('f-div');if(d){d.value='신고대리';updateFilterIndicators();rClients();}},50);};
+
+  const rc=document.getElementById('d-clients');
+  const recent=[...DB.clients].reverse().slice(0,5);
+  rc.innerHTML=recent.length?recent.map(c=>`<tr><td class="fw5">${c.name}</td><td><span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span></td><td class="mono">${fmt(c.fee)}원</td><td>${sn(c.staff_id)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">거래처 없음</td></tr>';
+
+  const rs=document.getElementById('d-staff');
+  rs.innerHTML=DB.staff.map(s=>{
+    const active=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상');
+    const cnt=active.length;
+    const fee=active.reduce((a,c)=>a+c.fee,0);
+    return `<tr><td style="display:flex;align-items:center;gap:7px"><span style="width:20px;height:20px;border-radius:50%;background:${s.color}22;color:${s.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${s.name[0]}</span>${s.name}</td><td>${cnt}건</td><td class="mono" style="color:var(--accent)">${fmt(fee)}원</td></tr>`;
+  }).join('')||'<tr><td colspan="3" class="empty">직원 없음</td></tr>';
+
+  // 홈택스 동기화 상태 카드 업데이트
+  const badge=document.getElementById('dash-htx-badge');
+  const timeEl=document.getElementById('dash-htx-time');
+  if(badge&&timeEl){
+    // meta.hometax_synced_at 우선, 없으면 DB.htxLastSync 사용
+    const syncTs=(DB.meta&&DB.meta.hometax_synced_at)||DB.htxLastSync||null;
+    if(syncTs){
+      const d=new Date(syncTs);
+      const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      badge.className='tag tag-green';
+      badge.textContent='동기화됨';
+      timeEl.textContent='마지막 동기화: '+ds;
+    } else if(DB.clients.some(c=>c.htx_synced)){
+      badge.className='tag tag-green';
+      badge.textContent='연결됨';
+      timeEl.textContent='동기화 시각 없음';
+    } else {
+      badge.className='tag tag-orange';
+      badge.textContent='미동기화';
+      timeEl.textContent='홈택스 동기화 필요';
+    }
+  }
+
+  // 기장료 구간 분포 차트
+  const FEE_BANDS=[
+    {label:'10만 이하', test:c=>c.fee<=100000},
+    {label:'10~20만',  test:c=>c.fee>100000&&c.fee<=200000},
+    {label:'20~30만',  test:c=>c.fee>200000&&c.fee<=300000},
+    {label:'30만 초과', test:c=>c.fee>300000}
+  ];
+  const bandCounts=FEE_BANDS.map(b=>actKijang.filter(b.test).length);
+  const fdSub=document.getElementById('fee-dist-sub');
+  if(fdSub) fdSub.textContent='기장 거래처 '+actKijang.length+'건 기준';
+  if(CI['ch-fee-dist']) CI['ch-fee-dist'].destroy();
+  const fdEl=document.getElementById('ch-fee-dist');
+  if(fdEl) CI['ch-fee-dist']=new Chart(fdEl,{
+    type:'bar',
+    data:{labels:FEE_BANDS.map(b=>b.label),datasets:[{data:bandCounts,backgroundColor:'#4f7eff33',borderColor:'#4f7eff',borderWidth:1.5,borderRadius:6}]},
+    options:{...CD,responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'건'}}},
+      scales:{x:{...CD.scales.x},y:{...CD.scales.y,ticks:{...CD.scales.y.ticks,precision:0}}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        const idx=elements[0].index;
+        go('clients');
+        setTimeout(()=>{
+          const fdiv=document.getElementById('f-div');if(fdiv)fdiv.value='기장';
+          const ffee=document.getElementById('f-fee-band');if(ffee)ffee.value=String(idx);
+          updateFilterIndicators();rClients();
+        },50);
+      }
+    }
+  });
+}
+
+document.getElementById('period-tabs').addEventListener('click',e=>{
+  if(!e.target.classList.contains('tab')) return;
+  document.querySelectorAll('#period-tabs .tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
+  rDash();
+});
+
+// ─── CLIENTS ─────────────────────────────────────
+function rClients(){
+  // populate selects
+  const fSt=document.getElementById('f-staff');
+  const ss=fSt.value;
+  fSt.innerHTML='<option value="">담당자 전체</option>'+DB.staff.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')+'<option value="__none__">미지정</option>';
+  fSt.value=ss;
+
+  let list=[...DB.clients];
+  const fdiv=document.getElementById('f-div').value;
+  const ft=document.getElementById('f-type').value;
+  const fs=document.getElementById('f-status').value;
+  const fst=fSt.value;
+  const kw=document.getElementById('f-kw').value.trim().toLowerCase();
+  const kbiz=(document.getElementById('f-bizno')||{}).value?.trim().toLowerCase()||'';
+  const kphone=(document.getElementById('f-phone')||{}).value?.trim().toLowerCase()||'';
+  const ffee=(document.getElementById('f-fee-band')||{}).value??'';
+  if(fdiv)   list=list.filter(c=>(c.div||'기장')===fdiv);
+  if(ft)     list=list.filter(c=>c.type===ft);
+  if(fs)     list=list.filter(c=>c.status===fs);
+  if(ffee!==''){const FEE_TESTS=[c=>c.fee<=100000,c=>c.fee>100000&&c.fee<=200000,c=>c.fee>200000&&c.fee<=300000,c=>c.fee>300000];list=list.filter(FEE_TESTS[Number(ffee)]);}
+  if(fst==='__none__') list=list.filter(c=>!c.staff_id);
+  else if(fst)         list=list.filter(c=>c.staff_id===fst);
+  if(kw)     list=list.filter(c=>c.name.toLowerCase().includes(kw));
+  if(kbiz)   list=list.filter(c=>c.biz_no.toLowerCase().includes(kbiz));
+  if(kphone) list=list.filter(c=>c.phone.toLowerCase().includes(kphone));
+  // 정렬
+  list.sort((a,b)=>{
+    let av,bv;
+    if(clSort.key==='name'){av=a.name||'';bv=b.name||'';}
+    else if(clSort.key==='fee'){av=a.fee||0;bv=b.fee||0;}
+    else if(clSort.key==='staff'){av=sn(a.staff_id);bv=sn(b.staff_id);}
+    else{av=(a.div||'기장');bv=(b.div||'기장');}
+    const cmp=typeof av==='number'?av-bv:av.localeCompare(bv,'ko');
+    return clSort.dir==='asc'?cmp:-cmp;
+  });
+  // 정렬 인디케이터 업데이트
+  ['div','name','fee','staff'].forEach(k=>{
+    const el=document.getElementById('th-'+k);
+    if(!el) return;
+    el.className='th-sort'+(clSort.key===k?' s-'+clSort.dir:'');
+  });
+  updateFilterIndicators();
+  const _total=DB.clients.length;
+  const _fCnt=document.getElementById('f-cnt');
+  if(list.length===_total){
+    _fCnt.innerHTML=`전체 <span class="cnt-num">${_total.toLocaleString()}</span>건`;
+  } else {
+    _fCnt.innerHTML=`전체 <span class="cnt-num">${_total.toLocaleString()}</span>건 중 <span class="cnt-filtered">${list.length.toLocaleString()}</span>건 표시`;
+  }
+
+  const tb=document.getElementById('cl-tbody');
+  tb.innerHTML=list.length?list.map((c,i)=>`
+    <tr class="cl-row" onclick="openDrawer('${c.id}')">
+      <td class="mono tc-m">${String(i+1).padStart(3,'0')}</td>
+      <td><span class="tag ${c.div==='신고대리'?'tag-gray':'tag-blue'}">${c.div||'기장'}</span></td>
+      <td><span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span></td>
+      <td class="fw5">${c.name}</td>
+      <td class="mono">${c.biz_no}</td>
+      <td><span class="tag ${c.status==='정상'?'tag-green':c.status==='휴업'?'tag-yellow':'tag-red'}"><span class="dot ${c.status==='정상'?'dg':c.status==='휴업'?'dy':'dr'}"></span>${c.status}</span></td>
+      <td class="mono" onclick="event.stopPropagation();setFeeBand(${c.fee})"><span class="fee-link">${fmt(c.fee)}원</span></td>
+      <td>${sn(c.staff_id)}</td>
+      <td class="mono">${c.phone}</td>
+      <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm btn-edit-only" onclick="openCM('${c.id}')">수정</button>
+        <button class="btn btn-danger btn-sm btn-edit-only" onclick="delC('${c.id}')">삭제</button>
+      </div></td>
+    </tr>`).join(''):`<tr><td colspan="10" class="empty">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="opacity:.3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>조건에 맞는 거래처가 없습니다</span>
+      <button class="btn btn-ghost btn-sm" onclick="resetF()">필터 초기화</button>
+    </td></tr>`;
+
+}
+
+['f-div','f-type','f-status','f-fee-band','f-staff'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('change',()=>{if(CUR==='clients')rClients();});
+});
+['f-kw','f-bizno','f-phone'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('input',()=>{if(CUR==='clients')rClients();});
+});
+
+function resetF(){
+  ['f-div','f-type','f-status','f-fee-band','f-staff'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-kw','f-bizno','f-phone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  updateFilterIndicators();
+  rClients();
+}
+function setFeeBand(fee){
+  const idx=fee<=100000?0:fee<=200000?1:fee<=300000?2:3;
+  const el=document.getElementById('f-fee-band');
+  if(el){el.value=String(idx);updateFilterIndicators();rClients();}
+}
+
+
+// ─── NOTICES ─────────────────────────────────────
+function getNoticeTargets(){
+  const ndiv=document.getElementById('n-div')?.value||'';
+  const ntype=document.getElementById('n-type-f')?.value||'';
+  let list=DB.clients.filter(c=>c.status==='정상');
+  if(ndiv)  list=list.filter(c=>(c.div||'기장')===ndiv);
+  if(ntype) list=list.filter(c=>c.type===ntype);
+  return list;
+}
+
+function renderNoticeTargets(){
+  const list=getNoticeTargets();
+  const cnt=document.getElementById('n-target-cnt');
+  const tb=document.getElementById('n-target-list');
+  if(cnt) cnt.textContent=list.length+'건';
+  if(!tb) return;
+  tb.innerHTML=list.length?list.map(c=>`
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:7px 10px" class="fw5">${c.name}</td>
+      <td style="padding:7px 10px"><span class="tag ${c.div==='신고대리'?'tag-gray':'tag-blue'}">${c.div||'기장'}</span></td>
+      <td style="padding:7px 10px"><span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span></td>
+      <td style="padding:7px 10px">${sn(c.staff_id)}</td>
+    </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--dim);font-size:12.5px">조건에 맞는 거래처 없음</td></tr>';
+}
+
+function resetNoticeFilter(){
+  const d=document.getElementById('n-div'); if(d) d.value='';
+  const t=document.getElementById('n-type-f'); if(t) t.value='';
+  renderNoticeTargets();
+}
+
+function rNotices(){
+  renderNoticeTargets();
+  const el=document.getElementById('notice-list');
+  if(!DB.notices.length){el.innerHTML='<div class="empty">발송 이력 없음</div>';return;}
+  const tc={부가가치세:'#4f7eff',법인세:'#2ecfa8',종합소득세:'#ff7c4f',원천세:'#ffb830',기타:'#7b829a'};
+  el.innerHTML=[...DB.notices].reverse().map(n=>`
+    <div class="notice-card">
+      <div class="n-icon" style="background:${tc[n.type]||'#7b829a'}22;color:${tc[n.type]||'#7b829a'}">${n.type[0]}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap">
+          <span class="fw5">${n.type}</span>
+          <span class="tag tag-gray">마감 ${n.deadline||'—'}</span>
+          <span class="tag tag-blue">${n.target}</span>
+          <span class="tc-m" style="font-size:12px;margin-left:auto">${n.date} · ${n.count}건</span>
+        </div>
+        <div class="tc-m" style="font-size:13px;white-space:pre-wrap">${(n.body||'').slice(0,120)}${(n.body||'').length>120?'…':''}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="delN('${n.id}')">삭제</button>
+    </div>`).join('');
+}
+
+async function sendNotice(){
+  const body=document.getElementById('n-body').value.trim();
+  if(!body){alert('안내문 내용을 입력해 주세요.');return;}
+  const type=document.getElementById('n-type').value;
+  const deadline=document.getElementById('n-deadline').value;
+  const targets=getNoticeTargets();
+  if(!targets.length){alert('대상 거래처가 없습니다. 필터를 확인해 주세요.');return;}
+
+  // 대상 레이블 생성
+  const ndiv=document.getElementById('n-div').value;
+  const ntype=document.getElementById('n-type-f').value;
+  const parts=[];
+  if(ndiv)  parts.push(ndiv);
+  if(ntype) parts.push(ntype);
+  const tLabel=parts.length?parts.join(' · ')+'만':'전체 거래처';
+
+  DB.notices.push({id:'n'+Date.now(),type,deadline,target:tLabel,body,date:today(),count:targets.length});
+  await save();
+  document.getElementById('n-body').value='';
+  rNotices();
+}
+
+async function delN(id){
+  if(!confirm('이 발송 기록을 삭제할까요?')) return;
+  DB.notices=DB.notices.filter(n=>n.id!==id);
+  await save(); rNotices();
+}
+
+function fillTmpl(){
+  const t=document.getElementById('n-type').value;
+
+  // 동일 신고 유형의 직전 저장 기록에서 본문 불러오기
+  const prev=[...DB.notices].reverse().find(n=>n.type===t&&n.body);
+  if(prev){
+    document.getElementById('n-body').value=prev.body;
+    return;
+  }
+
+  // 저장 기록 없으면 기본 템플릿
+  const tmpl={
+    부가가치세:'안녕하세요. 세무회계 인택스입니다.\n\n부가가치세 신고 기간이 도래하였습니다.\n신고 마감일까지 매출·매입 세금계산서, 카드내역 등 관련 자료를 제출해 주시기 바랍니다.\n\n문의사항은 언제든지 연락 주세요. 감사합니다.',
+    법인세:'안녕하세요. 세무회계 인택스입니다.\n\n법인세 신고 기간 안내 드립니다.\n사업연도 결산 관련 서류 및 증빙자료를 준비해 주시고, 마감일 전까지 제출해 주시기 바랍니다.\n\n감사합니다.',
+    종합소득세:'안녕하세요. 세무회계 인택스입니다.\n\n종합소득세 신고 기간 안내 드립니다.\n소득 관련 서류를 준비해 주시고, 기한 내 신고가 이루어질 수 있도록 협조 부탁드립니다.\n\n감사합니다.',
+    원천세:'안녕하세요. 세무회계 인택스입니다.\n\n원천세 신고·납부 기한 안내 드립니다.\n급여 및 기타 지급 내역 확인 후 기한 내 납부 완료해 주시기 바랍니다.\n\n감사합니다.',
+    기타:'안녕하세요. 세무회계 인택스입니다.\n\n세무 관련 안내 사항이 있어 연락 드립니다.\n아래 내용을 확인하시고 필요한 조치를 취해 주시기 바랍니다.\n\n감사합니다.'
+  };
+  document.getElementById('n-body').value=tmpl[t]||'';
+}
+
+// ─── STAFF ───────────────────────────────────────
+function rStaff(){
+  const isBoss=ME&&ME.role==='대표';
+  const cards=document.getElementById('staff-cards');
+  const rows=DB.staff.map(s=>{
+    const active=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상');
+    const cntCorp=active.filter(c=>c.type==='법인').length;
+    const cntInd=active.filter(c=>c.type==='개인').length;
+    const fee=active.reduce((a,c)=>a+c.fee,0);
+    return `<div class="staff-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:40px;height:40px;border-radius:50%;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">${s.name[0]}</div>
+        <div class="fw5">${s.name}</div>
+        <span class="tag ${s.status==='재직'?'tag-green':'tag-red'}" style="margin-left:auto">${s.status}</span>
+      </div>
+      <div class="g2" style="gap:8px">
+        <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 11px"><div style="font-size:11.5px;color:var(--muted);margin-bottom:2px">담당 거래처</div><div class="mono fw5" style="font-size:12.5px">법인 ${cntCorp} / 개인 ${cntInd}</div></div>
+        <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 11px"><div style="font-size:11.5px;color:var(--muted);margin-bottom:2px">기여 기장료</div><div class="mono fw5" style="font-size:13px">${fmt(fee)}원</div></div>
+      </div>
+      <div style="margin-top:9px;display:flex;gap:6px">
+        ${(()=>{const acc=calcAccruedLeave(s.join_date);const used=s.leave_used||0;const rem=acc-used;const rc=rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)';return`
+        <div style="flex:1;background:var(--surface2);border-radius:var(--r8);padding:7px 10px">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px">발생 연차</div>
+          <div class="mono fw5" style="font-size:12.5px">${acc}일</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:var(--r8);padding:7px 10px">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px">사용 연차</div>
+          <div class="mono fw5" style="font-size:12.5px">${used}일</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:var(--r8);padding:7px 10px;border:1px solid rgba(255,255,255,.06)">
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:2px">잔여 연차</div>
+          <div class="mono fw5" style="font-size:12.5px;color:${rc}">${rem}일</div>
+        </div>`;})()}
+      </div>
+      ${s.join_date?`<div style="margin-top:6px;font-size:11.5px;color:var(--muted)">입사일 <span style="color:var(--text)">${s.join_date}</span></div>`:''}
+    </div>`;
+  });
+  cards.innerHTML=rows.join('');
+
+  const names=DB.staff.map(s=>s.name);
+  const fees=DB.staff.map(s=>DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').reduce((a,c)=>a+c.fee,0));
+  const cnts=DB.staff.map(s=>DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').length);
+  const cols=DB.staff.map(s=>s.color+'99');
+  mkBar2('ch-sf',names,fees,'기여 기장료',cols);
+  mkBar2('ch-sc',names,cnts,'담당 수',cols);
+
+  // ── 통합 테이블 (직원 + 계정) ──
+  const mtb=document.getElementById('merged-tbody');
+  if(mtb){
+    const allRows=[];
+    // 1. 대표 계정 (DB.staff 미보유)
+    (DB.users||[]).filter(u=>u.role==='대표').forEach(u=>{
+      const isMe=ME&&u.id===ME.id;
+      allRows.push(`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-a);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${u.name[0]}</span>
+          <span class="fw5">${u.name}</span>${isMe?'<span class="tag tag-green" style="font-size:10px;padding:1px 6px;margin-left:2px">나</span>':''}
+        </div></td>
+        <td><span class="tag tag-blue">${u.role}</span></td>
+        <td class="mono tc-m" style="font-size:13px">${u.loginId||'—'}</td>
+        <td class="tc-m">—</td><td class="tc-m">—</td><td class="tc-m">—</td><td class="tc-m">—</td>
+        <td>${isMe?'<span class="tag tag-green">접속 중</span>':'<span class="tag tag-gray">오프라인</span>'}</td>
+        <td>${isBoss?`<div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">계정 수정</button>
+          <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비번 변경</button>
+        </div>`:'—'}</td>
+      </tr>`);
+    });
+    // 2. 직원 행 (DB.staff 기준, 연결된 계정 있으면 함께 표시)
+    DB.staff.forEach(s=>{
+      const u=(DB.users||[]).find(x=>x.staff_id===s.id);
+      const isMe=ME&&u&&u.id===ME.id;
+      const active=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상');
+      const cntCorp=active.filter(c=>c.type==='법인').length;
+      const cntInd=active.filter(c=>c.type==='개인').length;
+      const fee=active.reduce((a,c)=>a+c.fee,0);
+      allRows.push(`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;border-radius:50%;background:${s.color}22;color:${s.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${s.name[0]}</span>
+          <span class="fw5">${s.name}</span>${isMe?'<span class="tag tag-green" style="font-size:10px;padding:1px 6px;margin-left:2px">나</span>':''}
+        </div></td>
+        <td>${u?`<span class="tag tag-gray">${u.role}</span>`:'<span style="color:var(--dim);font-size:12px">미등록</span>'}</td>
+        <td class="mono tc-m" style="font-size:13px">${u?(u.loginId||'—'):'—'}</td>
+        <td>법인 ${cntCorp} / 개인 ${cntInd}</td>
+        <td class="mono">${fmt(fee)}원</td>
+        <td>${s.join_date||'—'}</td>
+        <td>${(()=>{const acc=calcAccruedLeave(s.join_date);const rem=acc-(s.leave_used||0);return`<span style="color:${rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)'}">${rem}일</span> <span style="color:var(--dim);font-size:11.5px">(발생 ${acc}일 / 사용 ${s.leave_used||0}일)</span>`})()}</td>
+        <td><span class="tag ${s.status==='재직'?'tag-green':'tag-red'}">${s.status}</span></td>
+        <td>${isBoss?`<div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${u?`<button class="btn btn-ghost btn-sm" onclick="openAM('${u.id}')">계정 수정</button>
+          <button class="btn btn-ghost btn-sm" onclick="openPwChange('${u.id}')">비번 변경</button>
+          <button class="btn btn-danger btn-sm" onclick="delA('${u.id}')">삭제</button>`:
+          `<button class="btn btn-danger btn-sm" onclick="delS('${s.id}')">삭제</button>`}
+        </div>`:'—'}</td>
+      </tr>`);
+    });
+    mtb.innerHTML=allRows.length?allRows.join(''):'<tr><td colspan="9" class="empty">등록된 직원이 없습니다</td></tr>';
+  }
+  syncSidebar();
+}
+
+
+function syncSidebar(){
+  const u=ME||(DB.users||[]).find(x=>x.role==='대표')||(DB.users||[])[0];
+  if(u){
+    document.getElementById('s-av').textContent=u.name[0];
+    document.getElementById('s-name').textContent=u.name;
+    document.getElementById('s-role').textContent=u.role;
+  }
+}
+
+// ─── MODAL: CLIENT ───────────────────────────────
+// ─── MODAL: CLIENT ───────────────────────────────
+function openCM(id){
+  EID=id||null;
+  const c=id?DB.clients.find(x=>x.id===id):{};
+  const so=DB.staff.map(s=>`<option value="${s.id}" ${c.staff_id===s.id?'selected':''}>${s.name}</option>`).join('');
+  document.getElementById('m-title').textContent=id?'거래처 수정':'거래처 등록';
+  document.getElementById('m-body').innerHTML=`
+    <div class="form-row">
+      <div class="form-group"><div class="form-label">업체명 *</div><input class="form-input" id="m-name" value="${c.name||''}"/></div>
+      <div class="form-group"><div class="form-label">사업자등록번호</div><input class="form-input" id="m-biz" value="${c.biz_no||''}" placeholder="000-00-00000"/></div>
+    </div>
+    <div class="form-row3">
+      <div class="form-group"><div class="form-label">구분</div><select class="form-select" id="m-div"><option value="기장" ${(c.div||'기장')==='기장'?'selected':''}>기장</option><option value="신고대리" ${c.div==='신고대리'?'selected':''}>신고대리</option></select></div>
+      <div class="form-group"><div class="form-label">유형</div><select class="form-select" id="m-type"><option value="법인" ${c.type==='법인'?'selected':''}>법인</option><option value="개인" ${c.type!=='법인'?'selected':''}>개인</option></select></div>
+      <div class="form-group"><div class="form-label">상태</div><select class="form-select" id="m-status"><option value="정상" ${(!c.status||c.status==='정상')?'selected':''}>정상</option><option value="휴업" ${c.status==='휴업'?'selected':''}>휴업</option><option value="폐업" ${c.status==='폐업'?'selected':''}>폐업</option></select></div>
+    </div>
+    <div class="form-row3">
+      <div class="form-group"><div class="form-label">규모</div><select class="form-select" id="m-size"><option value="중소기업" ${c.size==='중소기업'?'selected':''}>중소기업</option><option value="소상공인" ${c.size==='소상공인'?'selected':''}>소상공인</option><option value="개인사업자" ${c.size==='개인사업자'?'selected':''}>개인사업자</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><div class="form-label">업종</div><input class="form-input" id="m-sector" value="${c.sector||''}"/></div>
+      <div class="form-group"><div class="form-label">기장료 (원)</div><input class="form-input" type="number" id="m-fee" value="${c.fee||''}" placeholder="150000"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><div class="form-label">담당 직원</div><select class="form-select" id="m-staff"><option value="">미지정</option>${so}</select></div>
+      <div class="form-group"><div class="form-label">연락처</div><input class="form-input" id="m-phone" value="${c.phone||''}" placeholder="010-0000-0000"/></div>
+    </div>
+    <div class="form-group"><div class="form-label">메모</div><textarea class="form-textarea" id="m-note">${c.note||''}</textarea></div>`;
+  document.getElementById('m-confirm').onclick=saveC;
+  openModal();
+}
+
+async function saveC(){
+  const name=gv('m-name'); if(!name){alert('업체명을 입력해 주세요.');return;}
+  const base=EID?{...DB.clients.find(x=>x.id===EID)}:{cms:'N',cms_status:'미납',hometax_id:'',karinara_id:''};
+  const _biz=gv('m-biz');const _type=_biz?bizType(_biz):gv('m-type');
+  const obj={...base,id:EID||('c'+Date.now()),name,div:gv('m-div')||'기장',biz_no:_biz,type:_type,status:gv('m-status'),size:gv('m-size'),sector:gv('m-sector'),fee:Number(gv('m-fee'))||0,staff_id:gv('m-staff'),phone:gv('m-phone'),note:gv('m-note')};
+  if(EID){const i=DB.clients.findIndex(x=>x.id===EID);DB.clients[i]=obj;}else DB.clients.push(obj);
+  await save(); closeModal(); render('clients');
+  showToast(EID?'거래처가 수정됐습니다.':'거래처가 등록됐습니다.','green');
+}
+
+async function delC(id){
+  if(!confirm('이 거래처를 삭제할까요?')) return;
+  DB.clients=DB.clients.filter(c=>c.id!==id);
+  await save(); rClients();
+  showToast('거래처가 삭제됐습니다.','red');
+}
+
+// ─── MODAL: STAFF ────────────────────────────────
+function openSM(id){
+  EID=id||null;
+  const s=id?DB.staff.find(x=>x.id===id):{};
+  const linkedUser=(DB.users||[]).find(u=>u.staff_id===id);
+  const cols=['#4f7eff','#2ecfa8','#ff7c4f','#ffb830','#f05c5c','#c47eff'];
+  document.getElementById('m-title').textContent=id?'직원 수정':'직원 등록';
+  document.getElementById('m-body').innerHTML=`
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">이름</div>
+        <input class="form-input" id="m-sn" value="${s.name||''}" ${linkedUser?'readonly style="opacity:.55;cursor:not-allowed"':''}/>
+        ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">이름은 계정 수정에서 변경하세요</div>`:''}
+      </div>
+      <div class="form-group">
+        <div class="form-label">연차 현황</div>
+        <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 12px;font-size:12.5px;color:var(--muted)">${(()=>{const acc=calcAccruedLeave(s.join_date);const used=s.leave_used||0;const rem=acc-used;return`발생 ${acc}일 · 사용 ${used}일 · <span style="color:${rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)'}">잔여 ${rem}일</span>`;})()}<br/><span style="font-size:11px">사용 연차 입력은 계정 수정에서 변경하세요</span></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">재직 상태</div>
+        <select class="form-select" id="m-ss">
+          <option value="재직" ${s.status!=='퇴사'?'selected':''}>재직</option>
+          <option value="퇴사" ${s.status==='퇴사'?'selected':''}>퇴사</option>
+        </select>
+        ${linkedUser?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">계정 수정에서도 변경 가능합니다</div>`:''}
+      </div>
+      <div class="form-group">
+        <div class="form-label">입사일</div>
+        <input class="form-input" type="date" id="m-join" value="${s.join_date||''}"/>
+      </div>
+    </div>
+    <div class="form-group"><div class="form-label">아바타 색상</div>
+      <div style="display:flex;gap:8px;margin-top:4px">${cols.map(col=>`<div onclick="pickCol(this,'${col}')" style="width:26px;height:26px;border-radius:50%;background:${col};cursor:pointer;border:2px solid ${(s.color||cols[0])===col?'#fff':'transparent'};transition:border .15s" data-col="${col}"></div>`).join('')}</div>
+      <input type="hidden" id="m-col" value="${s.color||cols[0]}"/>
+    </div>`;
+  document.getElementById('m-confirm').onclick=saveS;
+  openModal();
+}
+
+function pickCol(el,col){
+  document.getElementById('m-col').value=col;
+  el.parentElement.querySelectorAll('div[data-col]').forEach(d=>d.style.borderColor=d.dataset.col===col?'#fff':'transparent');
+}
+
+async function saveS(){
+  const name=gv('m-sn'); if(!name){alert('이름을 입력해 주세요.');return;}
+  const existing=EID?DB.staff.find(x=>x.id===EID):{};
+  const obj={...existing,id:EID||('s'+Date.now()),name,status:gv('m-ss'),color:document.getElementById('m-col').value,join_date:gv('m-join')||''};
+  if(EID){const i=DB.staff.findIndex(x=>x.id===EID);DB.staff[i]=obj;}else DB.staff.push(obj);
+  await save(); closeModal(); render('staff');
+}
+
+async function delS(id){
+  if(!confirm('이 직원을 삭제할까요?\n담당 거래처의 담당자가 해제됩니다.')) return;
+  DB.clients.forEach(c=>{if(c.staff_id===id)c.staff_id='';});
+  DB.staff=DB.staff.filter(s=>s.id!==id);
+  await save(); render('staff');
+}
+
+// ─── STAFF ↔ USER 동기화 ────────────────────────
+function syncStaffFromUser(u){
+  const COLS=['#4f7eff','#2ecfa8','#ff7c4f','#ffb830','#f05c5c','#c47eff'];
+  if(u.staff_id){
+    const s=DB.staff.find(x=>x.id===u.staff_id);
+    if(s) s.name=u.name;
+  } else {
+    const used=DB.staff.map(s=>s.color);
+    const col=COLS.find(c=>!used.includes(c))||COLS[DB.staff.length%COLS.length];
+    const ns={id:'s'+Date.now(),name:u.name,rank:'',leave_used:0,status:'재직',color:col};
+    DB.staff.push(ns);
+    u.staff_id=ns.id;
+  }
+}
+
+// ─── MODAL: ACCOUNT ──────────────────────────────
+function openAM(id){
+  EID=id||null;
+  const u=id?(DB.users||[]).find(x=>x.id===id):{};
+  const linkedStaff=u.staff_id?DB.staff.find(x=>x.id===u.staff_id):null;
+  const staffStatus=linkedStaff?.status||'재직';
+  const isStaff=(u.role||'직원')!=='대표';
+  const cols=['#4f7eff','#2ecfa8','#ff7c4f','#ffb830','#f05c5c','#c47eff'];
+  document.getElementById('m-title').textContent=id?'계정 수정':'계정 추가';
+  document.getElementById('m-body').innerHTML=`
+    <div class="form-row">
+      <div class="form-group"><div class="form-label">이름 *</div><input class="form-input" id="m-un" value="${u.name||''}"/></div>
+      <div class="form-group"><div class="form-label">권한</div>
+        <select class="form-select" id="m-ur" onchange="toggleAccStatusField(this.value)">
+          <option value="대표" ${u.role==='대표'?'selected':''}>대표</option>
+          <option value="직원" ${u.role!=='대표'?'selected':''}>직원</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><div class="form-label">로그인 아이디 *</div><input class="form-input" id="m-uid" value="${u.loginId||''}"/></div>
+      <div class="form-group"><div class="form-label">비밀번호${id?' (변경 시만 입력)':' *'}</div><input class="form-input" type="password" id="m-upw" placeholder="${id?'변경하지 않으면 비워두세요':'필수 입력'}"/></div>
+    </div>
+    <div class="form-row" id="acc-status-row" style="${isStaff?'':'display:none'}">
+      <div class="form-group">
+        <div class="form-label">재직 상태</div>
+        <select class="form-select" id="m-ust">
+          <option value="재직" ${staffStatus==='재직'?'selected':''}>재직</option>
+          <option value="퇴사" ${staffStatus==='퇴사'?'selected':''}>퇴사</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">입사일</div>
+        <input class="form-input" type="date" id="m-ajoin" value="${linkedStaff?.join_date||''}"/>
+      </div>
+    </div>
+    <div class="form-row" id="acc-leave-row" style="${isStaff?'':'display:none'}">
+      <div class="form-group">
+        <div class="form-label">사용한 연차 (일)</div>
+        <input class="form-input" type="number" min="0" id="m-aleave" value="${linkedStaff?.leave_used??0}"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">연차 현황 (자동 계산)</div>
+        <div style="background:var(--surface2);border-radius:var(--r8);padding:9px 12px;font-size:12.5px;color:var(--muted)">${(()=>{if(!linkedStaff)return'입사일 저장 후 확인 가능';const acc=calcAccruedLeave(linkedStaff.join_date);const used=linkedStaff.leave_used||0;const rem=acc-used;return`발생 ${acc}일 · 사용 ${used}일 · <span style="color:${rem>0?'var(--green)':rem===0?'var(--yellow)':'var(--red)'}">잔여 ${rem}일</span>`;})()}</div>
+      </div>
+    </div>
+    <div id="acc-color-row" style="${isStaff?'':'display:none'}">
+      <div class="form-group"><div class="form-label">아바타 색상</div>
+        <div style="display:flex;gap:8px;margin-top:4px">${cols.map(col=>`<div onclick="pickAccCol(this,'${col}')" style="width:26px;height:26px;border-radius:50%;background:${col};cursor:pointer;border:2px solid ${(linkedStaff?.color||cols[0])===col?'#fff':'transparent'};transition:border .15s" data-col="${col}"></div>`).join('')}</div>
+        <input type="hidden" id="m-acol" value="${linkedStaff?.color||cols[0]}"/>
+      </div>
+    </div>`;
+  document.getElementById('m-confirm').textContent='저장';
+  document.getElementById('m-confirm').onclick=saveA;
+  openModal();
+}
+function pickAccCol(el,col){
+  document.getElementById('m-acol').value=col;
+  el.parentElement.querySelectorAll('div[data-col]').forEach(d=>d.style.borderColor=d.dataset.col===col?'#fff':'transparent');
+}
+
+function toggleAccStatusField(role){
+  ['acc-status-row','acc-leave-row','acc-color-row'].forEach(id=>{
+    const row=document.getElementById(id);
+    if(row) row.style.display=role==='직원'?'':'none';
+  });
+}
+
+async function saveA(){
+  const name=gv('m-un'); if(!name){alert('이름을 입력해 주세요.');return;}
+  const loginId=gv('m-uid'); if(!loginId){alert('로그인 아이디를 입력해 주세요.');return;}
+  const pwInput=gv('m-upw');
+  if(!DB.users) DB.users=[];
+  const dup=(DB.users||[]).find(x=>x.loginId===loginId&&x.id!==EID);
+  if(dup){alert('이미 사용 중인 아이디입니다.');return;}
+  const existing=EID?(DB.users.find(x=>x.id===EID)||{}):null;
+  const pw=pwInput||(existing?.pw||'');
+  if(!pw){alert('비밀번호를 입력해 주세요.');return;}
+  const role=gv('m-ur');
+  const access=role==='대표'?'전체':'거래처, 안내문, 직원';
+  const obj={id:EID||('u'+Date.now()),name,role,loginId,pw,access};
+  // 기존 staff_id 보존
+  if(existing?.staff_id) obj.staff_id=existing.staff_id;
+  // DB.staff 연동
+  if(role==='직원'){
+    syncStaffFromUser(obj);
+    // 재직/퇴사 상태 동기화
+    const staffEntry=DB.staff.find(x=>x.id===obj.staff_id);
+    if(staffEntry){
+      const st=gv('m-ust'); if(st) staffEntry.status=st;
+      const jd=gv('m-ajoin'); if(jd!==undefined) staffEntry.join_date=jd;
+      const lu=gv('m-aleave'); if(lu!==undefined&&lu!=='') staffEntry.leave_used=Math.max(0,Number(lu));
+      const ac=document.getElementById('m-acol')?.value; if(ac) staffEntry.color=ac;
+    }
+  } else if(existing?.role==='직원'&&existing.staff_id){
+    // 직원 → 대표 변경 시: 연결된 staff 퇴사 처리
+    const s=DB.staff.find(x=>x.id===existing.staff_id);
+    if(s) s.status='퇴사';
+    delete obj.staff_id;
+  }
+  if(EID){const i=DB.users.findIndex(x=>x.id===EID);DB.users[i]=obj;if(ME&&ME.id===EID)ME=obj;}
+  else DB.users.push(obj);
+  await save(); closeModal(); rStaff();
+}
+
+function openPwChange(id){
+  EID=id;
+  const u=(DB.users||[]).find(x=>x.id===id);
+  if(!u) return;
+  document.getElementById('m-title').textContent='비밀번호 변경 — '+u.name;
+  document.getElementById('m-body').innerHTML=`
+    <div class="form-group">
+      <div class="form-label">새 비밀번호 *</div>
+      <input class="form-input" type="password" id="m-pw1" placeholder="새 비밀번호를 입력하세요"/>
+    </div>
+    <div class="form-group">
+      <div class="form-label">새 비밀번호 확인 *</div>
+      <input class="form-input" type="password" id="m-pw2" placeholder="한 번 더 입력하세요"/>
+    </div>`;
+  document.getElementById('m-confirm').textContent='변경';
+  document.getElementById('m-confirm').onclick=savePwChange;
+  openModal();
+}
+
+async function savePwChange(){
+  const pw1=gv('m-pw1');const pw2=gv('m-pw2');
+  if(!pw1){alert('새 비밀번호를 입력해 주세요.');return;}
+  if(pw1!==pw2){alert('비밀번호가 일치하지 않습니다.');return;}
+  if(pw1.length<4){alert('비밀번호는 4자 이상이어야 합니다.');return;}
+  const u=(DB.users||[]).find(x=>x.id===EID);if(!u)return;
+  u.pw=pw1;if(ME&&ME.id===EID)ME.pw=pw1;
+  await save();closeModal();
+  alert(u.name+' 계정의 비밀번호가 변경되었습니다.');
+  rStaff();
+}
+
+async function delA(id){
+  const u=(DB.users||[]).find(x=>x.id===id);if(!u)return;
+  if(!confirm(`'${u.name}' 계정을 삭제할까요?\n직원 현황에서 퇴사 처리됩니다.`))return;
+  // 연결된 staff 퇴사 처리 (거래처 담당자 기록 보존)
+  if(u.role==='직원'&&u.staff_id){
+    const s=DB.staff.find(x=>x.id===u.staff_id);
+    if(s) s.status='퇴사';
+  }
+  DB.users=DB.users.filter(x=>x.id!==id);
+  await save();rStaff();
+}
+
+// ─── MODAL ───────────────────────────────────────
+function openModal(){document.getElementById('modal-overlay').classList.add('open');}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')closeModal();});
+
+// ─── GLOBAL SEARCH ───────────────────────────────
+document.getElementById('g-search').addEventListener('input',e=>{
+  const kw=e.target.value.trim();
+  if(!kw) return;
+  if(CUR!=='clients') go('clients');
+  document.getElementById('f-kw').value=kw;
+  rClients();
+});
+
+// ─── EXPORT / IMPORT ─────────────────────────────
+function exportCSV(){
+  const rows=[['유형','업체명','사업자번호','상태','업종','규모','기장료','CMS','CMS상태','담당직원','연락처','홈택스ID']];
+  DB.clients.forEach(c=>rows.push([c.type,c.name,c.biz_no,c.status,c.sector,c.size,c.fee,c.cms,c.cms_status,sn(c.staff_id),c.phone,c.hometax_id]));
+  dl(new Blob(['\uFEFF'+rows.map(r=>r.map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),'intax-clients.csv');
+}
+// ─── 홈택스 동기화 ────────────────────────────────────
+// 브리지 서버(localhost:19423) 연결 가능 시 → 홈택스 직접 동기화 (공동인증서 자동 로그인)
+// 브리지 오프라인 시 → GitHub 원격 백업에서 최신 데이터 pull (폴백)
+const _BRIDGE='http://localhost:19423';
+let _htxPollTimer=null;
+
+async function doHometaxSync(){
+  const btn   = document.getElementById('btn-htx-sync');
+  const icon  = document.getElementById('htx-sync-icon');
+  const label = document.getElementById('htx-sync-label');
+  const badge = document.getElementById('dash-htx-badge');
+
+  function setLoading(on){
+    btn.disabled=on;
+    icon.classList.toggle('spin',on);
+    label.textContent=on?'동기화 중…':'동기화';
+  }
+  if(_htxPollTimer){ clearInterval(_htxPollTimer); _htxPollTimer=null; }
+
+  setLoading(true);
+  badge.className='tag tag-yellow'; badge.textContent='연결 중';
+
+  // ① 브리지 서버 연결 시도 (2초 타임아웃)
+  let bridgeOk=false;
+  try{
+    const ctrl=new AbortController();
+    const t=setTimeout(()=>ctrl.abort(),2000);
+    const r=await fetch(_BRIDGE+'/ping',{signal:ctrl.signal});
+    clearTimeout(t);
+    bridgeOk=r.ok;
+  }catch(e){ bridgeOk=false; }
+
+  // ② 브리지 있으면 홈택스 직접 동기화
+  if(bridgeOk){
+    badge.className='tag tag-yellow'; badge.textContent='홈택스 동기화 중';
+    try{ await fetch(_BRIDGE+'/sync'); }catch(e){
+      setLoading(false);
+      badge.className='tag tag-red'; badge.textContent='오류';
+      showToast('동기화 요청 실패','red');
+      return;
+    }
+    _htxPollTimer=setInterval(async()=>{
+      try{
+        const r=await fetch(_BRIDGE+'/status');
+        const st=await r.json();
+        if(st.status==='done'){
+          clearInterval(_htxPollTimer); _htxPollTimer=null;
+          setLoading(false);
+          try{ await tryRemoteSync(); }catch(ex){}
+          if(!DB.meta) DB.meta={};
+          DB.meta.hometax_synced_at=new Date().toISOString();
+          save(); render(CUR);
+          badge.className='tag tag-green'; badge.textContent='동기화 완료';
+          showToast('홈택스 동기화 완료 — 거래처 정보가 업데이트됐습니다.','green');
+          if(CUR==='dashboard') rDash();
+        } else if(st.status==='error'){
+          clearInterval(_htxPollTimer); _htxPollTimer=null;
+          setLoading(false);
+          badge.className='tag tag-red'; badge.textContent='오류';
+          showToast('동기화 오류: '+(st.message||'알 수 없는 오류'),'red');
+        }
+      }catch(e){}
+    },3000);
+    return;
+  }
+
+  // ③ 브리지 오프라인 → GitHub 원격 백업에서 pull (폴백)
+  badge.className='tag tag-yellow'; badge.textContent='원격 데이터 확인 중';
+  try{
+    const resp=await fetch(REMOTE_BACKUP_URL+'?t='+Date.now(),{cache:'no-store'});
+    if(!resp.ok) throw new Error('GitHub 연결 실패 ('+resp.status+')');
+    const backup=await resp.json();
+    if(!backup.clients||!Array.isArray(backup.clients)||backup.clients.length===0)
+      throw new Error('원격 데이터가 비어 있습니다.');
+
+    const tsBefore=(DB.meta&&DB.meta.hometax_synced_at)||DB.htxLastSync||'';
+    const remoteSynced=(backup.meta&&backup.meta.hometax_synced_at)||backup.htxLastSync||'';
+    const localEmpty=!DB.clients||DB.clients.length===0;
+
+    if(localEmpty||remoteSynced>tsBefore){
+      DB.clients=backup.clients;
+      if(backup.staff)   DB.staff=backup.staff;
+      if(backup.notices) DB.notices=backup.notices;
+      if(backup.fees)    DB.fees=backup.fees;
+      if(backup.meta)    DB.meta=backup.meta;
+      DB.htxLastSync=remoteSynced||DB.htxLastSync;
+      applyStaffMap(); await save(); render(CUR);
+      badge.className='tag tag-green'; badge.textContent='동기화됨';
+      showToast('GitHub 백업에서 동기화 완료 — 거래처 '+backup.clients.length+'건\n※ 홈택스 직접 동기화는 INTAX_대시보드_열기.bat을 사용하세요.','green');
+    } else {
+      const d=tsBefore?new Date(tsBefore):null;
+      const ds=d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'';
+      badge.className='tag tag-green'; badge.textContent='최신 상태';
+      showToast('이미 최신 상태입니다.'+(ds?' ('+ds+')':''),'green');
+    }
+  }catch(e){
+    badge.className='tag tag-orange'; badge.textContent='오류';
+    showToast('동기화 실패: '+(e.message||'네트워크 오류'),'red');
+  }finally{
+    setLoading(false);
+    if(CUR==='dashboard') rDash();
+  }
+}
+
+// ─── 사업자 상태 검증 ────────────────────────────────
+async function doVerifyStatus(){
+  const btn=document.getElementById('btn-verify-status');
+  const origHTML=btn.innerHTML;
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin" style="font-size:12px">↻</span> 검증 중…';
+
+  // ① 브리지 연결 확인
+  try{
+    const ctrl=new AbortController();
+    const t=setTimeout(()=>ctrl.abort(),2000);
+    const r=await fetch(_BRIDGE+'/ping',{signal:ctrl.signal});
+    clearTimeout(t);
+    if(!r.ok) throw new Error();
+  }catch{
+    btn.disabled=false; btn.innerHTML=origHTML;
+    showToast('동기화 브리지에 연결할 수 없습니다.\nINTAX_대시보드_열기.bat으로 다시 열어 주세요.','red');
+    return;
+  }
+
+  // ② 사업자번호 수집
+  const bNos=[...new Set(
+    DB.clients.map(c=>(c.biz_no||'').replace(/[^0-9]/g,'')).filter(b=>b.length===10)
+  )];
+  if(!bNos.length){
+    btn.disabled=false; btn.innerHTML=origHTML;
+    showToast('사업자번호가 등록된 거래처가 없습니다.','red');
+    return;
+  }
+
+  // ③ 브리지 /verify-status 호출
+  let result;
+  try{
+    const r=await fetch(_BRIDGE+'/verify-status',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(bNos)
+    });
+    result=await r.json();
+  }catch(e){
+    btn.disabled=false; btn.innerHTML=origHTML;
+    showToast('상태 검증 요청 실패: '+e.message,'red');
+    return;
+  }
+
+  if(result.status==='error'){
+    btn.disabled=false; btn.innerHTML=origHTML;
+    showToast('상태 검증 오류: '+(result.message||'알 수 없는 오류'),'red');
+    return;
+  }
+
+  // ④ 결과 반영 (정상→정상, 휴업→휴업, 폐업→폐업)
+  const map=result.data||{};
+  let changed=0;
+  DB.clients.forEach(c=>{
+    const key=(c.biz_no||'').replace(/[^0-9]/g,'');
+    if(!key) return;
+    const newSt=map[key];
+    if(newSt&&c.status!==newSt){c.status=newSt;changed++;}
+  });
+
+  await save();
+  render(CUR);
+  btn.disabled=false; btn.innerHTML=origHTML;
+  showToast(`상태 검증 완료 — ${result.verified}건 확인, ${changed}건 상태 변경`+(changed?` (휴업/폐업 포함)`:''),'green');
+}
+
+function exportJSON(){dl(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}),'intax-backup.json');}
+function importJSON(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=async ev=>{
+    try{const d=JSON.parse(ev.target.result);if(!d.clients||!d.staff)throw 0;DB=d;await save();render(CUR);alert('가져오기 완료');}
+    catch{alert('올바른 인택스 백업 파일이 아닙니다.');}
+  };
+  r.readAsText(f); e.target.value='';
+}
+async function doReset(){
+  if(!confirm('⚠️ 모든 데이터를 초기화합니다.\n이 작업은 되돌릴 수 없습니다. 계속할까요?')) return;
+  DB={clients:[],staff:[],notices:[],users:[{id:'u1',name:'관리자',role:'대표',access:'전체'}]};
+  await save(); render(CUR); alert('초기화 완료');
+}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+
+// ─── HOMETAX IMPORT ──────────────────────────────
+function importHometaxFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    let data;
+    try{data=JSON.parse(ev.target.result);}
+    catch{alert('JSON 파일을 파싱할 수 없습니다. 올바른 홈택스 가져오기 형식인지 확인하세요.');e.target.value='';return;}
+    if(!data.clients||!Array.isArray(data.clients)){
+      alert('올바른 홈택스 가져오기 파일 형식이 아닙니다.\n{"clients":[...]} 형태여야 합니다.');
+      e.target.value=''; return;
+    }
+    let added=0,updated=0,skipped=0;
+    const divMap={'기장':'기장','신고대리':'신고대리','수임':'기장','신고':'신고대리'};
+    const typeMap={'법인':'법인','개인':'개인','개인사업자':'개인'};
+    const baseTs=Date.now();let idSeq=0;
+    for(const hc of data.clients){
+      if(!hc.biz_no&&!hc.name){skipped++;continue;}
+      const bizNo=(hc.biz_no||'').replace(/[^0-9\-]/g,'');
+      const existing=bizNo?DB.clients.find(c=>c.biz_no===bizNo):null;
+      const div=divMap[hc.div]||divMap[hc.수임구분]||'기장';
+      const type=bizNo?bizType(bizNo):(typeMap[hc.type]||typeMap[hc.법인구분]||'개인');
+      const name=hc.name||hc['상호(법인명)']||hc.상호||'(이름없음)';
+      const sector=hc.sector||hc.종목||hc.업태||'';
+      const _st=hc.status||hc.상태||'정상';const status=_st==='폐업'?'폐업':_st==='휴업'?'휴업':'정상';
+      if(existing){
+        existing.name=name;
+        existing.div=div;
+        existing.type=type;
+        existing.sector=sector;
+        existing.status=status;
+        existing.htx_synced=true;
+        if(hc.hometax_id) existing.hometax_id=hc.hometax_id;
+        updated++;
+      } else {
+        const newId='c'+baseTs+'_'+(idSeq++);
+        DB.clients.push({
+          id:newId,name,div,biz_no:bizNo,type,status,
+          sector,size:hc.size||hc.규모||'개인사업자',
+          fee:Number(hc.fee)||0,cms:'N',cms_status:'미납',
+          staff_id:'',phone:hc.phone||'',
+          hometax_id:hc.hometax_id||'',karinara_id:'',note:'',
+          htx_synced:true
+        });
+        added++;
+      }
+    }
+    applyStaffMap();
+    DB.htxLastSync=new Date().toISOString();
+    await save();
+    render(CUR);
+    // 동기화 결과 알림 바 표시
+    const bar=document.getElementById('htx-sync-bar');
+    const msg=document.getElementById('htx-sync-msg');
+    if(bar&&msg){
+      msg.textContent=`홈택스 동기화 완료 — 신규 ${added}건, 업데이트 ${updated}건${skipped?`, 건너뜀 ${skipped}건`:''}`;
+      bar.style.display='flex';
+    } else {
+      alert(`홈택스 동기화 완료\n신규: ${added}건 | 업데이트: ${updated}건${skipped?` | 건너뜀: ${skipped}건`:''}`);
+    }
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+// ─── CHARTS ──────────────────────────────────────
+const CD={
+  plugins:{legend:{display:false}},
+  scales:{
+    x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7b829a',font:{size:10,family:'IBM Plex Mono'}}},
+    y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7b829a',font:{size:10,family:'IBM Plex Mono'}}}
+  }
+};
+
+function mkBar(id,labels,data,label,color){
+  if(CI[id]) CI[id].destroy();
+  const c=document.getElementById(id); if(!c) return;
+  CI[id]=new Chart(c,{type:'bar',data:{labels,datasets:[{label,data,backgroundColor:color+'55',borderColor:color,borderWidth:1.5,borderRadius:4}]},options:{...CD,responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)+'원'}}}}});
+}
+function mkBar2(id,labels,data,label,colors){
+  if(CI[id]) CI[id].destroy();
+  const c=document.getElementById(id); if(!c) return;
+  CI[id]=new Chart(c,{type:'bar',data:{labels,datasets:[{label,data,backgroundColor:Array.isArray(colors)?colors:colors+'55',borderColor:Array.isArray(colors)?colors.map(x=>x.replace('99','')):colors,borderWidth:1.5,borderRadius:4}]},options:{...CD,responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}}}});
+}
+function mkDonut(id,labels,data,colors){
+  if(CI[id]) CI[id].destroy();
+  const c=document.getElementById(id); if(!c) return;
+  CI[id]=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors.map(x=>x+'99'),borderColor:colors,borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#7b829a',font:{size:10,family:'Noto Sans KR'},padding:8,boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}건`}}}}});
+}
+function mkHBar(id,labels,data,color){
+  if(CI[id]) CI[id].destroy();
+  const c=document.getElementById(id); if(!c) return;
+  CI[id]=new Chart(c,{type:'bar',data:{labels,datasets:[{data,backgroundColor:color+'55',borderColor:color,borderWidth:1.5,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7b829a',font:{size:10}}},y:{grid:{display:false},ticks:{color:'#7b829a',font:{size:10}}}}}});
+}
+
+// ─── HEADER FILTER POPUP ─────────────────────────
+const F_META = {
+  'f-div':    {label:'구분',   type:'select', opts:['','기장','신고대리'],       labels:['전체','기장','신고대리']},
+  'f-type':   {label:'유형',   type:'select', opts:['','법인','개인'],          labels:['전체','법인','개인']},
+  'f-kw':     {label:'업체명', type:'text'},
+  'f-bizno':  {label:'사업자번호', type:'text'},
+  'f-status':   {label:'상태',   type:'select', opts:['','정상','휴업','폐업'],   labels:['전체','정상','휴업','폐업']},
+  'f-fee-band': {label:'기장료', type:'select', opts:['','0','1','2','3'], labels:['전체','10만 이하','10~20만','20~30만','30만 초과']},
+  'f-staff':    {label:'담당직원', type:'select-dynamic'},
+  'f-phone':  {label:'연락처', type:'text'},
+};
+
+let popupFid = null;
+
+document.addEventListener('click', e => {
+  const th = e.target.closest('.th-filter');
+  if (th) { openFilterPopup(th, th.dataset.fid); return; }
+  const popup = document.getElementById('f-popup');
+  if (!popup.contains(e.target)) closeFilterPopup();
+});
+
+function openFilterPopup(th, fid) {
+  if (popupFid === fid) { closeFilterPopup(); return; }
+  popupFid = fid;
+  const meta = F_META[fid];
+  const popup = document.getElementById('f-popup');
+  const inner = document.getElementById('f-popup-inner');
+  const curVal = document.getElementById(fid)?.value || '';
+
+  // build content
+  let html = `<label>${meta.label} 필터</label>`;
+  if (meta.type === 'text') {
+    html += `<input type="search" id="fp-input" placeholder="${meta.label} 검색…" value="${curVal}"/>`;
+  } else if (meta.type === 'select') {
+    html += `<select id="fp-input">${meta.opts.map((o,i)=>`<option value="${o}" ${o===curVal?'selected':''}>${meta.labels[i]}</option>`).join('')}</select>`;
+  } else if (meta.type === 'select-dynamic') {
+    const srcEl = document.getElementById(fid);
+    html += `<select id="fp-input">${Array.from(srcEl.options).map(o=>`<option value="${o.value}" ${o.value===curVal?'selected':''}>${o.text}</option>`).join('')}</select>`;
+  }
+  inner.innerHTML = html;
+
+  // position below th
+  const rect = th.getBoundingClientRect();
+  popup.style.top  = (rect.bottom + 4) + 'px';
+  popup.style.left = Math.min(rect.left, window.innerWidth - 220) + 'px';
+  popup.style.display = 'block';
+
+  // focus
+  setTimeout(() => { const inp = document.getElementById('fp-input'); if(inp) inp.focus(); }, 50);
+  // enter key applies
+  const inp = document.getElementById('fp-input');
+  if(inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') applyFilterPopup(); });
+}
+
+function applyFilterPopup() {
+  if (!popupFid) return;
+  const inp = document.getElementById('fp-input');
+  if (!inp) return;
+  const hidden = document.getElementById(popupFid);
+  if (hidden) hidden.value = inp.value;
+  updateFilterIndicators();
+  closeFilterPopup();
+  rClients();
+}
+
+function closeFilterPopup() {
+  document.getElementById('f-popup').style.display = 'none';
+  popupFid = null;
+}
+
+function updateFilterIndicators() {
+  Object.keys(F_META).forEach(fid => {
+    const val = document.getElementById(fid)?.value || '';
+    const indId = 'fi-' + fid.replace('f-','');
+    const ind = document.getElementById(indId);
+    const th  = document.querySelector(`[data-fid="${fid}"]`);
+    if (ind) { ind.textContent = val ? '▲' : '⬍'; ind.className = val ? 'f-ind on' : 'f-ind'; }
+    if (th)  th.classList.toggle('f-active', !!val);
+    // visible filter-sel gets .active class when a value is selected
+    const sel = document.querySelector(`.filter-sel#${fid}`);
+    if (sel) sel.classList.toggle('active', !!val);
+  });
+}
+
+// ─── TOAST ───────────────────────────────────────
+function showToast(msg, type=''){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className='toast'+(type?' t-'+type:'');
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut .2s ease forwards';setTimeout(()=>t.remove(),200);},2600);
+}
+
+// ─── MOBILE SIDEBAR ──────────────────────────────
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('mob-open');
+  document.getElementById('mob-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mob-overlay').classList.remove('open');
+}
+document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',closeSidebar));
+
+// ─── CLIENT SORT ─────────────────────────────────
+let clSort={key:'div',dir:'asc'};
+function setSortCl(key){
+  if(clSort.key===key) clSort.dir=clSort.dir==='asc'?'desc':'asc';
+  else{clSort.key=key;clSort.dir='asc';}
+  rClients();
+}
+
+// ─── CLIENT DRAWER ───────────────────────────────
+function openDrawer(id){
+  const c=DB.clients.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('drawer-name').textContent=c.name;
+  const staff=DB.staff.find(s=>s.id===c.staff_id);
+  document.getElementById('drawer-body').innerHTML=`
+    <div class="drawer-row">
+      <div class="drawer-lbl">구분 / 유형</div>
+      <div class="drawer-val" style="display:flex;gap:6px;align-items:center;margin-top:2px">
+        <span class="tag ${c.div==='신고대리'?'tag-gray':'tag-blue'}">${c.div||'기장'}</span>
+        <span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span>
+        <span class="tag ${c.status==='정상'?'tag-green':c.status==='휴업'?'tag-yellow':'tag-red'}"><span class="dot ${c.status==='정상'?'dg':c.status==='휴업'?'dy':'dr'}"></span>${c.status}</span>
+      </div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">사업자번호</div>
+      <div class="drawer-val mono">${c.biz_no||'—'}</div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">기장료</div>
+      <div class="drawer-val mono" style="color:var(--accent);font-size:16px">${fmt(c.fee)}원</div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">담당 직원</div>
+      <div class="drawer-val">${staff?`<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:20px;height:20px;border-radius:50%;background:${staff.color}22;color:${staff.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${staff.name[0]}</span>${staff.name}</span>`:'<span style="color:var(--dim)">미지정</span>'}</div>
+    </div>
+    <div class="drawer-row">
+      <div class="drawer-lbl">연락처</div>
+      <div class="drawer-val mono">${c.phone||'—'}</div>
+    </div>
+    ${(c.hometax_id||c.karinara_id)?`<div class="drawer-sep">
+      ${c.hometax_id?`<div class="drawer-row"><div class="drawer-lbl">홈택스 ID</div><div class="drawer-val mono">${c.hometax_id}</div></div>`:''}
+      ${c.karinara_id?`<div class="drawer-row"><div class="drawer-lbl">경리나라 ID</div><div class="drawer-val mono">${c.karinara_id}</div></div>`:''}
+    </div>`:''}
+    <div class="drawer-sep">
+      <div class="drawer-lbl" style="margin-bottom:6px">메모</div>
+      <div style="font-size:13.5px;color:${c.note?'var(--text)':'var(--dim)'};line-height:1.7;white-space:pre-wrap;background:var(--surface2);border-radius:var(--r8);padding:10px 12px;min-height:60px">${c.note||'메모 없음'}</div>
+    </div>
+    <div class="drawer-sep" style="flex-direction:row;gap:8px">
+      <button class="btn btn-ghost btn-sm btn-edit-only" style="flex:1" onclick="closeDrawer();openCM('${c.id}')">수정</button>
+      <button class="btn btn-danger btn-sm btn-edit-only" style="flex:1" onclick="closeDrawer();delC('${c.id}')">삭제</button>
+    </div>`;
+  document.getElementById('client-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('client-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// ─── UTILS ───────────────────────────────────────
+function gv(id){return document.getElementById(id)?.value||'';}
+function fmt(n){return Math.round(n||0).toLocaleString('ko-KR');}
+// 근로기준법 연차 발생 계산 (입사일 기준)
+function calcAccruedLeave(joinDateStr){
+  if(!joinDateStr) return 0;
+  const join=new Date(joinDateStr);
+  const today=new Date();
+  if(isNaN(join)) return 0;
+  let years=today.getFullYear()-join.getFullYear();
+  const md=today.getMonth()-join.getMonth();
+  if(md<0||(md===0&&today.getDate()<join.getDate())) years--;
+  if(years<1){
+    // 1년 미만: 완성된 개월 수만큼 1일씩 (최대 11일)
+    let months=(today.getFullYear()-join.getFullYear())*12+(today.getMonth()-join.getMonth());
+    if(today.getDate()<join.getDate()) months--;
+    return Math.min(Math.max(months,0),11);
+  }
+  // 1년 이상: 15일 기본, 3년차부터 2년마다 +1일 (최대 25일)
+  return Math.min(15+Math.floor((years-1)/2),25);
+}
+function sn(id){return DB.staff.find(s=>s.id===id)?.name||'미지정';}
+// 사업자번호 중간 2자리(80~89 → 법인, 나머지 → 개인)
+function bizType(biz_no){const d=(biz_no||'').replace(/[^0-9]/g,'');if(d.length<5)return '개인';const m=parseInt(d.substring(3,5),10);return(m>=80&&m<=89)?'법인':'개인';}
+function today(){return new Date().toISOString().split('T')[0];}
+
+// ─── START ───────────────────────────────────────
+init();
+
+// 안내문 대상 필터 실시간 연동 (DOM 준비 후)
+document.addEventListener('change', e=>{
+  if(e.target.id==='n-div'||e.target.id==='n-type-f') renderNoticeTargets();
+});
+</script>
+</body>
+</html>
