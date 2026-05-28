@@ -1015,10 +1015,22 @@ function rDash(){
   const baseK=actKijang.reduce((s,c)=>s+c.fee,0);
   const baseR=actRep.reduce((s,c)=>s+c.fee,0);
   const tf=(baseK+baseR)*mult;
+  const _kAll=DB.clients.filter(c=>(c.div||'기장')==='기장');
+  const _kS=_kAll.filter(c=>c.status==='휴업').length;
+  const _kC=_kAll.filter(c=>c.status==='폐업').length;
+  const _rAll=DB.clients.filter(c=>c.div==='신고대리');
+  const _rS=_rAll.filter(c=>c.status==='휴업').length;
+  const _rC=_rAll.filter(c=>c.status==='폐업').length;
   document.getElementById('kpi-c').textContent=actKijang.length;
-  document.getElementById('kpi-c2').textContent='전체 '+DB.clients.filter(c=>(c.div||'기장')==='기장').length+'개 중 정상';
+  document.getElementById('kpi-c2').innerHTML=
+    `<span style="color:var(--green)">정상 ${actKijang.length}</span>&ensp;`+
+    `<span style="color:var(--yellow)">휴업 ${_kS}</span>&ensp;`+
+    `<span style="color:var(--red)">폐업 ${_kC}</span>`;
   document.getElementById('kpi-rep').textContent=actRep.length;
-  document.getElementById('kpi-rep2').textContent='전체 '+DB.clients.filter(c=>c.div==='신고대리').length+'개 중 정상';
+  document.getElementById('kpi-rep2').innerHTML=
+    `<span style="color:var(--green)">정상 ${actRep.length}</span>&ensp;`+
+    `<span style="color:var(--yellow)">휴업 ${_rS}</span>&ensp;`+
+    `<span style="color:var(--red)">폐업 ${_rC}</span>`;
   document.getElementById('kpi-fk').textContent=fmt(baseK*mult)+'원';
   document.getElementById('kpi-fr').textContent=fmt(baseR*mult)+'원';
   document.getElementById('kpi-s').textContent=DB.staff.filter(s=>s.status==='재직').length+'명';
