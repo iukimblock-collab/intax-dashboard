@@ -433,11 +433,6 @@ tbody tr.cl-row{cursor:pointer}
           <div class="card"><div class="card-label">재직 직원 수</div><div class="card-val" id="kpi-s">0명</div><div class="card-chg" id="kpi-s2">재직 중</div></div>
         </div>
       </div>
-      <!-- 기장료 구간 분포 -->
-      <div>
-        <div class="sh"><span class="sh-title">기장료 구간 분포</span><span id="fee-dist-sub" style="font-size:12px;color:var(--muted)"></span></div>
-        <div class="card"><canvas id="ch-fee-dist" height="80"></canvas></div>
-      </div>
       <div class="g2">
         <div>
           <div class="sh"><span class="sh-title">최근 등록 거래처</span><button class="btn btn-ghost btn-sm" onclick="go('clients')">전체 보기</button></div>
@@ -447,6 +442,11 @@ tbody tr.cl-row{cursor:pointer}
           <div class="sh"><span class="sh-title">직원 현황</span><button class="btn btn-ghost btn-sm" onclick="go('staff')">전체 보기</button></div>
           <div class="tbl-wrap"><table><thead><tr><th>직원명</th><th>담당 수</th><th>상태</th></tr></thead><tbody id="d-staff"></tbody></table></div>
         </div>
+      </div>
+      <!-- 기장료 구간 분포 -->
+      <div>
+        <div class="sh"><span class="sh-title">기장료 구간 분포</span><span id="fee-dist-sub" style="font-size:12px;color:var(--muted)"></span></div>
+        <div class="card"><canvas id="ch-fee-dist" height="55"></canvas></div>
       </div>
       <!-- 시스템 상태 통합 카드 (대표만) -->
       <div id="dash-system" class="role-boss-block" style="width:calc(50% - 6px)">
@@ -1061,8 +1061,7 @@ function rDash(){
     {label:'10만 이하', test:c=>c.fee<=100000},
     {label:'10~20만',  test:c=>c.fee>100000&&c.fee<=200000},
     {label:'20~30만',  test:c=>c.fee>200000&&c.fee<=300000},
-    {label:'30~50만',  test:c=>c.fee>300000&&c.fee<=500000},
-    {label:'50만 초과', test:c=>c.fee>500000}
+    {label:'30만 초과', test:c=>c.fee>300000}
   ];
   const bandCounts=FEE_BANDS.map(b=>act.filter(b.test).length);
   const fdSub=document.getElementById('fee-dist-sub');
