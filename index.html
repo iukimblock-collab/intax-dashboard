@@ -283,6 +283,8 @@ body:not(.role-boss) .btn-edit-only{pointer-events:none;opacity:.3;cursor:not-al
 .th-sort.s-asc::after{content:' ▲';font-size:9px;color:var(--accent);opacity:1}
 .th-sort.s-desc::after{content:' ▼';font-size:9px;color:var(--accent);opacity:1}
 tbody tr.cl-row{cursor:pointer}
+.fee-link{color:var(--accent);text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer;transition:opacity .15s}
+.fee-link:hover{opacity:.7;text-decoration:underline solid}
 /* ── 거래처 현황 모바일 전용 액션 바 ── */
 #cl-mob-bar{display:none;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border2);background:var(--surface);flex-shrink:0}
 @media(max-width:640px){
@@ -1157,7 +1159,7 @@ function rClients(){
       <td class="fw5">${c.name}</td>
       <td class="mono">${c.biz_no}</td>
       <td><span class="tag ${c.status==='정상'?'tag-green':c.status==='휴업'?'tag-yellow':'tag-red'}"><span class="dot ${c.status==='정상'?'dg':c.status==='휴업'?'dy':'dr'}"></span>${c.status}</span></td>
-      <td class="mono">${fmt(c.fee)}원</td>
+      <td class="mono" onclick="event.stopPropagation();setFeeBand(${c.fee})"><span class="fee-link">${fmt(c.fee)}원</span></td>
       <td>${sn(c.staff_id)}</td>
       <td class="mono">${c.phone}</td>
       <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
@@ -1186,6 +1188,11 @@ function resetF(){
   ['f-kw','f-bizno','f-phone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   updateFilterIndicators();
   rClients();
+}
+function setFeeBand(fee){
+  const idx=fee<=100000?0:fee<=200000?1:fee<=300000?2:3;
+  const el=document.getElementById('f-fee-band');
+  if(el){el.value=String(idx);updateFilterIndicators();rClients();}
 }
 
 
