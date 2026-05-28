@@ -32,3 +32,6 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# 자동 생성 상태 파일
+.sync_status.json
