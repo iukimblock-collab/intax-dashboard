@@ -443,13 +443,14 @@ tbody tr.cl-row{cursor:pointer}
           <div class="tbl-wrap"><table><thead><tr><th>직원명</th><th>담당 수</th><th>상태</th></tr></thead><tbody id="d-staff"></tbody></table></div>
         </div>
       </div>
-      <!-- 기장료 구간 분포 -->
-      <div>
-        <div class="sh"><span class="sh-title">기장료 구간 분포</span><span id="fee-dist-sub" style="font-size:12px;color:var(--muted)"></span></div>
-        <div class="card"><canvas id="ch-fee-dist" height="55"></canvas></div>
-      </div>
-      <!-- 시스템 상태 통합 카드 (대표만) -->
-      <div id="dash-system" class="role-boss-block" style="width:calc(50% - 6px)">
+      <div class="g2">
+        <!-- 기장료 구간 분포 -->
+        <div>
+          <div class="sh"><span class="sh-title">기장료 구간 분포</span><span id="fee-dist-sub" style="font-size:12px;color:var(--muted)"></span></div>
+          <div class="card"><canvas id="ch-fee-dist" height="55"></canvas></div>
+        </div>
+        <!-- 시스템 상태 통합 카드 (대표만) -->
+        <div id="dash-system" class="role-boss-block">
         <div class="sh"><span class="sh-title">시스템</span></div>
         <div class="card" style="padding:0;overflow:hidden">
           <!-- 홈택스 동기화 행 -->
@@ -488,6 +489,7 @@ tbody tr.cl-row{cursor:pointer}
           </div>
         </div>
       </div>
+    </div>
     </div>
 
     <!-- ── CLIENTS ── -->
