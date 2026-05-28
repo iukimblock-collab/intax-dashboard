@@ -442,7 +442,7 @@ tbody tr.cl-row{cursor:pointer}
         </div>
         <div>
           <div class="sh"><span class="sh-title">직원 현황</span><button class="btn btn-ghost btn-sm" onclick="go('staff')">전체 보기</button></div>
-          <div class="tbl-wrap"><table><thead><tr><th>직원명</th><th>담당 수</th><th>상태</th></tr></thead><tbody id="d-staff"></tbody></table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>직원명</th><th>담당 수</th><th>기여 기장료</th></tr></thead><tbody id="d-staff"></tbody></table></div>
         </div>
       </div>
       <div class="g2">
@@ -1038,8 +1038,10 @@ function rDash(){
 
   const rs=document.getElementById('d-staff');
   rs.innerHTML=DB.staff.map(s=>{
-    const cnt=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상').length;
-    return `<tr><td style="display:flex;align-items:center;gap:7px"><span style="width:20px;height:20px;border-radius:50%;background:${s.color}22;color:${s.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${s.name[0]}</span>${s.name}</td><td>${cnt}건</td><td><span class="dot ${s.status==='재직'?'dg':'dm'}"></span>${s.status}</td></tr>`;
+    const active=DB.clients.filter(c=>c.staff_id===s.id&&c.status==='정상');
+    const cnt=active.length;
+    const fee=active.reduce((a,c)=>a+c.fee,0);
+    return `<tr><td style="display:flex;align-items:center;gap:7px"><span style="width:20px;height:20px;border-radius:50%;background:${s.color}22;color:${s.color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${s.name[0]}</span>${s.name}</td><td>${cnt}건</td><td class="mono" style="color:var(--accent)">${fmt(fee)}원</td></tr>`;
   }).join('')||'<tr><td colspan="3" class="empty">직원 없음</td></tr>';
 
   // 홈택스 동기화 상태 카드 업데이트
