@@ -424,7 +424,7 @@ tbody tr.cl-row{cursor:pointer}
           </div>
           <div class="card">
             <div class="card-label">총 신고대리 거래처</div>
-            <div class="card-val" style="color:var(--yellow)" id="kpi-rep">0</div>
+            <div class="card-val" style="color:var(--muted)" id="kpi-rep">0</div>
             <div class="card-chg" id="kpi-rep2">신고대리 거래처</div>
             <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
               <div class="card-label">신고대리 금액</div>
@@ -1173,7 +1173,7 @@ function rClients(){
   tb.innerHTML=list.length?list.map((c,i)=>`
     <tr class="cl-row" onclick="openDrawer('${c.id}')">
       <td class="mono tc-m">${String(i+1).padStart(3,'0')}</td>
-      <td><span class="tag ${c.div==='신고대리'?'tag-yellow':'tag-blue'}">${c.div||'기장'}</span></td>
+      <td><span class="tag ${c.div==='신고대리'?'tag-gray':'tag-blue'}">${c.div||'기장'}</span></td>
       <td><span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span></td>
       <td class="fw5">${c.name}</td>
       <td class="mono">${c.biz_no}</td>
@@ -1234,7 +1234,7 @@ function renderNoticeTargets(){
   tb.innerHTML=list.length?list.map(c=>`
     <tr style="border-bottom:1px solid var(--border)">
       <td style="padding:7px 10px" class="fw5">${c.name}</td>
-      <td style="padding:7px 10px"><span class="tag ${c.div==='신고대리'?'tag-yellow':'tag-blue'}">${c.div||'기장'}</span></td>
+      <td style="padding:7px 10px"><span class="tag ${c.div==='신고대리'?'tag-gray':'tag-blue'}">${c.div||'기장'}</span></td>
       <td style="padding:7px 10px"><span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span></td>
       <td style="padding:7px 10px">${sn(c.staff_id)}</td>
     </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--dim);font-size:12.5px">조건에 맞는 거래처 없음</td></tr>';
@@ -2126,7 +2126,7 @@ function openDrawer(id){
     <div class="drawer-row">
       <div class="drawer-lbl">구분 / 유형</div>
       <div class="drawer-val" style="display:flex;gap:6px;align-items:center;margin-top:2px">
-        <span class="tag ${c.div==='신고대리'?'tag-yellow':'tag-blue'}">${c.div||'기장'}</span>
+        <span class="tag ${c.div==='신고대리'?'tag-gray':'tag-blue'}">${c.div||'기장'}</span>
         <span class="tag ${c.type==='법인'?'tag-blue':'tag-gray'}">${c.type}</span>
         <span class="tag ${c.status==='정상'?'tag-green':c.status==='휴업'?'tag-yellow':'tag-red'}"><span class="dot ${c.status==='정상'?'dg':c.status==='휴업'?'dy':'dr'}"></span>${c.status}</span>
       </div>
