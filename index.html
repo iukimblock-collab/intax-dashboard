@@ -513,6 +513,7 @@ tbody tr.cl-row{cursor:pointer}
             <input type="search" id="f-kw" class="filter-sel" placeholder="업체명 검색" style="background-image:none;padding-right:8px;min-width:100px;max-width:130px"/>
             <input type="search" id="f-bizno" class="filter-sel" placeholder="사업자번호" style="background-image:none;padding-right:8px;min-width:100px;max-width:130px"/>
             <select id="f-status" class="filter-sel"><option value="">상태 전체</option><option>정상</option><option>휴업</option><option>폐업</option></select>
+            <select id="f-fee-band" class="filter-sel"><option value="">기장료 전체</option><option value="0">10만 이하</option><option value="1">10~20만</option><option value="2">20~30만</option><option value="3">30만 초과</option></select>
             <select id="f-staff" class="filter-sel"><option value="">담당자 전체</option></select>
             <span id="fi-staff" style="display:none"></span>
           </div>
@@ -1063,15 +1064,28 @@ function rDash(){
     {label:'20~30만',  test:c=>c.fee>200000&&c.fee<=300000},
     {label:'30만 초과', test:c=>c.fee>300000}
   ];
-  const bandCounts=FEE_BANDS.map(b=>act.filter(b.test).length);
+  const bandCounts=FEE_BANDS.map(b=>actKijang.filter(b.test).length);
   const fdSub=document.getElementById('fee-dist-sub');
-  if(fdSub) fdSub.textContent='정상 거래처 '+act.length+'건 기준';
+  if(fdSub) fdSub.textContent='기장 거래처 '+actKijang.length+'건 기준';
   if(CI['ch-fee-dist']) CI['ch-fee-dist'].destroy();
   const fdEl=document.getElementById('ch-fee-dist');
   if(fdEl) CI['ch-fee-dist']=new Chart(fdEl,{
     type:'bar',
     data:{labels:FEE_BANDS.map(b=>b.label),datasets:[{data:bandCounts,backgroundColor:'#4f7eff33',borderColor:'#4f7eff',borderWidth:1.5,borderRadius:6}]},
-    options:{...CD,responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'건'}}},scales:{x:{...CD.scales.x},y:{...CD.scales.y,ticks:{...CD.scales.y.ticks,precision:0}}}}
+    options:{...CD,responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'건'}}},
+      scales:{x:{...CD.scales.x},y:{...CD.scales.y,ticks:{...CD.scales.y.ticks,precision:0}}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        const idx=elements[0].index;
+        go('clients');
+        setTimeout(()=>{
+          const fdiv=document.getElementById('f-div');if(fdiv)fdiv.value='기장';
+          const ffee=document.getElementById('f-fee-band');if(ffee)ffee.value=String(idx);
+          updateFilterIndicators();rClients();
+        },50);
+      }
+    }
   });
 }
 
@@ -1098,9 +1112,11 @@ function rClients(){
   const kw=document.getElementById('f-kw').value.trim().toLowerCase();
   const kbiz=(document.getElementById('f-bizno')||{}).value?.trim().toLowerCase()||'';
   const kphone=(document.getElementById('f-phone')||{}).value?.trim().toLowerCase()||'';
+  const ffee=(document.getElementById('f-fee-band')||{}).value??'';
   if(fdiv)   list=list.filter(c=>(c.div||'기장')===fdiv);
   if(ft)     list=list.filter(c=>c.type===ft);
   if(fs)     list=list.filter(c=>c.status===fs);
+  if(ffee!==''){const FEE_TESTS=[c=>c.fee<=100000,c=>c.fee>100000&&c.fee<=200000,c=>c.fee>200000&&c.fee<=300000,c=>c.fee>300000];list=list.filter(FEE_TESTS[Number(ffee)]);}
   if(fst)    list=list.filter(c=>c.staff_id===fst);
   if(kw)     list=list.filter(c=>c.name.toLowerCase().includes(kw));
   if(kbiz)   list=list.filter(c=>c.biz_no.toLowerCase().includes(kbiz));
@@ -1154,7 +1170,7 @@ function rClients(){
 
 }
 
-['f-div','f-type','f-status','f-staff'].forEach(id=>{
+['f-div','f-type','f-status','f-fee-band','f-staff'].forEach(id=>{
   const el=document.getElementById(id);
   if(el) el.addEventListener('change',()=>{if(CUR==='clients')rClients();});
 });
@@ -1164,7 +1180,7 @@ function rClients(){
 });
 
 function resetF(){
-  ['f-div','f-type','f-status','f-staff'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-div','f-type','f-status','f-fee-band','f-staff'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f-kw','f-bizno','f-phone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   updateFilterIndicators();
   rClients();
@@ -1891,8 +1907,9 @@ const F_META = {
   'f-type':   {label:'유형',   type:'select', opts:['','법인','개인'],          labels:['전체','법인','개인']},
   'f-kw':     {label:'업체명', type:'text'},
   'f-bizno':  {label:'사업자번호', type:'text'},
-  'f-status': {label:'상태',   type:'select', opts:['','정상','휴업','폐업'],   labels:['전체','정상','휴업','폐업']},
-  'f-staff':  {label:'담당직원', type:'select-dynamic'},
+  'f-status':   {label:'상태',   type:'select', opts:['','정상','휴업','폐업'],   labels:['전체','정상','휴업','폐업']},
+  'f-fee-band': {label:'기장료', type:'select', opts:['','0','1','2','3'], labels:['전체','10만 이하','10~20만','20~30만','30만 초과']},
+  'f-staff':    {label:'담당직원', type:'select-dynamic'},
   'f-phone':  {label:'연락처', type:'text'},
 };
 
