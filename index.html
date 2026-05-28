@@ -433,6 +433,11 @@ tbody tr.cl-row{cursor:pointer}
           <div class="card"><div class="card-label">재직 직원 수</div><div class="card-val" id="kpi-s">0명</div><div class="card-chg" id="kpi-s2">재직 중</div></div>
         </div>
       </div>
+      <!-- 기장료 구간 분포 -->
+      <div>
+        <div class="sh"><span class="sh-title">기장료 구간 분포</span><span id="fee-dist-sub" style="font-size:12px;color:var(--muted)"></span></div>
+        <div class="card"><canvas id="ch-fee-dist" height="80"></canvas></div>
+      </div>
       <div class="g2">
         <div>
           <div class="sh"><span class="sh-title">최근 등록 거래처</span><button class="btn btn-ghost btn-sm" onclick="go('clients')">전체 보기</button></div>
@@ -1050,6 +1055,25 @@ function rDash(){
       timeEl.textContent='홈택스 동기화 필요';
     }
   }
+
+  // 기장료 구간 분포 차트
+  const FEE_BANDS=[
+    {label:'10만 이하', test:c=>c.fee<=100000},
+    {label:'10~20만',  test:c=>c.fee>100000&&c.fee<=200000},
+    {label:'20~30만',  test:c=>c.fee>200000&&c.fee<=300000},
+    {label:'30~50만',  test:c=>c.fee>300000&&c.fee<=500000},
+    {label:'50만 초과', test:c=>c.fee>500000}
+  ];
+  const bandCounts=FEE_BANDS.map(b=>act.filter(b.test).length);
+  const fdSub=document.getElementById('fee-dist-sub');
+  if(fdSub) fdSub.textContent='정상 거래처 '+act.length+'건 기준';
+  if(CI['ch-fee-dist']) CI['ch-fee-dist'].destroy();
+  const fdEl=document.getElementById('ch-fee-dist');
+  if(fdEl) CI['ch-fee-dist']=new Chart(fdEl,{
+    type:'bar',
+    data:{labels:FEE_BANDS.map(b=>b.label),datasets:[{data:bandCounts,backgroundColor:'#4f7eff33',borderColor:'#4f7eff',borderWidth:1.5,borderRadius:6}]},
+    options:{...CD,responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'건'}}},scales:{x:{...CD.scales.x},y:{...CD.scales.y,ticks:{...CD.scales.y.ticks,precision:0}}}}
+  });
 }
 
 document.getElementById('period-tabs').addEventListener('click',e=>{
