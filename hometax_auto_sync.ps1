@@ -89,7 +89,28 @@ $NpkiRoot  = "C:\NPKI"
 $IntaxCert = $null
 $_now      = Get-Date
 
-if (Test-Path $NpkiRoot) {
+# ── 알려진 인택스 인증서 경로 직접 확인 (우선) ────────
+$_knownDir  = "C:\NPKI\yessign\USER\cn=인택스(97769)000302120230602121091689,ou=97769,ou=IBK,ou=corporation,o=yessign,c=kr"
+$_knownCert = Join-Path $_knownDir "signCert.der"
+$_knownKey  = Join-Path $_knownDir "signPri.key"
+if ((Test-Path $_knownCert) -and (Test-Path $_knownKey)) {
+    try {
+        $x509 = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+        $x509.Import([System.IO.File]::ReadAllBytes($_knownCert))
+        if ($x509.NotAfter -gt $_now) {
+            $IntaxCert = @{ Dir=$_knownDir; CertFile=$_knownCert; KeyFile=$_knownKey; Name=(Split-Path $_knownDir -Leaf) }
+            $daysLeft = ($x509.NotAfter - $_now).Days
+            LogOK "인택스 인증서 직접 확인 완료"
+            LogOK "  만료: $($x509.NotAfter.ToString('yyyy-MM-dd')) (${daysLeft}일 남음)"
+        } else {
+            LogWarn "알려진 인증서가 만료됐습니다 ($($x509.NotAfter.ToString('yyyy-MM-dd'))). 폴백 탐색을 시도합니다."
+        }
+        $x509.Dispose()
+    } catch { LogWarn "직접 경로 인증서 로드 실패: $_" }
+}
+
+# ── 패턴 탐색 (직접 경로 실패 시 폴백) ───────────────
+if (-not $IntaxCert -and (Test-Path $NpkiRoot)) {
     $certDirs = Get-ChildItem -Path $NpkiRoot -Recurse -Directory -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -match "인택스|INTAX|97769" }
 
